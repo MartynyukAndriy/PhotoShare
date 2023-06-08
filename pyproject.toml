@@ -10,6 +10,7 @@ python = "^3.10"
 fastapi = {extras = ["all"], version = "^0.96.0"}
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 sqlalchemy = "^2.0.15"
+qrcode = {extras = ["pil"], version = "^7.4.2"}
 
 
 [build-system]
