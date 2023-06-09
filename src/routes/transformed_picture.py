@@ -11,7 +11,7 @@ from src.repository import transformed_picture
 router = APIRouter(prefix="/pictures", tags=["Transformed pictures"])
 
 
-@router.get("{true_img_id}/", response_model=List[TransformPictureResponce])
+@router.get("/{true_img_id}/", response_model=List[TransformPictureResponce])
 async def get_transformed_pictures(
         true_img_id: int = Path(ge=1),
         db: Session = Depends(get_db)):
