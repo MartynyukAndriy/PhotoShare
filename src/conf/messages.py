@@ -1,5 +1,3 @@
-
-
 class AuthMessages:
     account_already_exists = "Account already exists"
     invalid_email = "Invalid email"
@@ -9,6 +7,9 @@ class AuthMessages:
     verification_error = "Verification error"
     your_email_is_already_confirmed = "Your email is already confirmed"
     check_your_email_for_confirmation = "Check your email for confirmation"
+    invalid_scope_for_token = "Invalid scope for token"
+    could_not_validate_credentials = "Could not validate credentials"
+    invalid_token_for_email_verification = "Invalid token for email verification"
 
 
 class RolesMessages:

@@ -10,6 +10,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from src.conf.config import settings
+from src.conf.messages import AuthMessages
 from src.database.db import get_db
 from src.repository import users as repository_users
 
@@ -28,7 +29,8 @@ class Auth:
         plain-text password matches the hashed one.
 
         :param plain_password: Check if the password entered by the user matches with what is stored in the database
-        :param hashed_password: Check the password that is being passed in against the hashed password stored in the database
+        :param hashed_password: Check the password that is being passed in against the hashed password stored
+        in the database
         :return: True if the plain_password is correct, and false otherwise
         """
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -68,7 +70,8 @@ class Auth:
 
         :param data: dict: Pass in the user's information, such as their username and email
         :param expires_delta: Optional[float]: Set the expiry time of the refresh token
-        :return: An encoded token that contains the data passed to it as well as a timestamp of when the token was created and an expiration date
+        :return: An encoded token that contains the data passed to it as well as a timestamp
+        when the token was created and an expiration date
         """
         to_encode = data.copy()
         if expires_delta:
@@ -83,7 +86,8 @@ class Auth:
         """
         The decode_refresh_token function is used to decode the refresh token.
         It takes a refresh_token as an argument and returns the email of the user if it's valid.
-        If not, it raises an HTTPException with status code 401 (UNAUTHORIZED) and detail 'Could not validate credentials'.
+        If not, it raises an HTTPException with status code 401 (UNAUTHORIZED)
+        and detail 'Could not validate credentials'.
 
         :param refresh_token: str: Pass the refresh token to the function
         :return: The email of the user associated with the refresh token
@@ -93,9 +97,10 @@ class Auth:
             if payload['scope'] == 'refresh_token':
                 email = payload['sub']
                 return email
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid scope for token')
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.invalid_scope_for_token)
         except JWTError:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail=AuthMessages.could_not_validate_credentials)
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
         """
@@ -109,7 +114,7 @@ class Auth:
         """
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail=AuthMessages.could_not_validate_credentials,
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
@@ -151,7 +156,8 @@ class Auth:
 
     async def get_email_from_token(self, token: str):
         """
-        The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
+        The get_email_from_token function takes a token as an argument
+        and returns the email address associated with that token.
         The function uses the jwt library to decode the token, which is then used to return the email address.
 
         :param token: str: Pass in the token that is sent to the user's email address
@@ -164,7 +170,7 @@ class Auth:
         except JWTError as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail="Invalid token for email verification")
+                                detail=AuthMessages.invalid_token_for_email_verification)
 
 
 auth_service = Auth()
