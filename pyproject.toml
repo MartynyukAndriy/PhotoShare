@@ -16,6 +16,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-multipart = "^0.0.6"
 fastapi-mail = "^1.2.8"
 psycopg2 = "^2.9.6"
+alembic = "^1.11.1"
 
 
 
