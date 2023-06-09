@@ -8,7 +8,6 @@ from PIL import Image
 
 import cloudinary
 import cloudinary.uploader
-
 from src.conf.config import settings
 
 cloudinary.config(
@@ -52,17 +51,18 @@ def create_qrcode(image_url):
 
 
 if __name__ == "__main__":
-    # upload_image('marble_2.jpg')
+    upload_image('Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg')
     # result = get_url('marble_2.jpg')
 
-    transform_list = [
-  {'width': 150, 'height': 150, 'gravity': "face", 'crop': "thumb"},
-  {'radius': 20},
-  {'effect': "sepia"},
-  {'overlay': "cloudinary_icon_blue", 'gravity': "south_east", 'x': 5, 'y': 5, 'width': 50, 'opacity': 60, 'effect': "brightness:200"},
-  {'angle': 10}
-  ]
-    result = get_transformed_url(get_url('marble_2.jpg'), transform_list)
+  
+    transformations = [
+    {"width": 500, "height": 500, "crop": "fill"},
+    {"effect": "grayscale"},
+    {"angle": 90}
+]
+    result = get_transformed_url(
+        get_url('Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg'), 
+        transformation=transformations)
     create_qrcode(result)
 
     # create_qrcode('https://zrade.net/p/putin-khuilo-5mTx1EG63uPVNe2UU61W62')
