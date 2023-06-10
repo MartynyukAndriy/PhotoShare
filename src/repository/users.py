@@ -5,32 +5,40 @@ from src.schemas.user_schemas import UserModel
 
 
 async def get_user_by_email(email: str, db: Session) -> User | None:
-    pass
-    # """
-    # The get_user_by_email function takes in an email and a database session,
-    # and returns the user associated with that email. If no such user exists, it returns None.
-    #
-    # :param email: str: Pass in the email address of the user to be retrieved
-    # :param db: Session: Pass the database session to the function
-    # :return: The user object with the email address that was passed in
-    # """
-    # return db.query(User).filter(User.email == email).first()
+    """
+    The get_user_by_email function takes in an email and a database session,
+    and returns the user associated with that email. If no such user exists, it returns None.
+
+    :param email: str: Pass the email address of the user to be retrieved
+    :param db: Session: Pass in a database session
+    :return: A user object or none
+    :doc-author: Trelent
+    """
+    return db.query(User).filter(User.email == email).first()
 
 
 async def create_user(body: UserModel, db: Session) -> User:
-    pass
-    # """
-    # The create_user function creates a new user in the database.
-    #
-    # :param body: UserModel: Get the data from the request body
-    # :param db: Session: Access the database
-    # :return: The new user
-    # """
-    # new_user = User(**body.dict())
-    # db.add(new_user)
-    # db.commit()
-    # db.refresh(new_user)
-    # return new_user
+    """
+    The create_user function creates a new user in the database.
+        If there are no users with admin role, then the new user will be created as an admin.
+        Otherwise, it will be created as a regular user.
+
+    :param body: UserModel: Create a new user object
+    :param db: Session: Access the database
+    :return: A user object
+    """
+    admin_exists = db.query(User).filter(User.role == 'admin').first()
+
+    if admin_exists:
+        new_user = User(**body.dict(), role='user')
+    else:
+        new_user = User(**body.dict(),  role='admin')
+
+    new_user = User(**body.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
 
 
 async def update_token(user: User, token: str | None, db: Session) -> None:

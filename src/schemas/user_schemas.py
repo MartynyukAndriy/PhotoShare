@@ -1,19 +1,20 @@
 from pydantic import BaseModel, EmailStr, Field
 
+from src.database.models.users_model import Role
+
 
 class UserModel(BaseModel):
-    pass
-    # username: str = Field(min_length=5, max_length=16)
-    # email: EmailStr
-    # password: str = Field(min_length=6, max_length=10)
+    username: str = Field(min_length=5, max_length=12)
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=8)
 
 
 class UserResponse(BaseModel):
-    pass
-    # id: int
-    # username: str
-    # email: EmailStr
-    # avatar: str
+    id: int
+    username: str
+    email: EmailStr
+    avatar: str
+    role: Role
 
     class Config:
         orm_mode = True
