@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declarative_base
 from src.database.roles import Role
 
 Base = declarative_base()
