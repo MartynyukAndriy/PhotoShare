@@ -14,7 +14,7 @@ conf = ConnectionConfig(
     MAIL_FROM=EmailStr(settings.mail_from),
     MAIL_PORT=settings.mail_port,
     MAIL_SERVER=settings.mail_server,
-    MAIL_FROM_NAME="App Name", #TODO Change name
+    MAIL_FROM_NAME="App Name",  # TODO Change name
     MAIL_STARTTLS=False,
     MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
@@ -30,7 +30,7 @@ async def send_email(email: EmailStr, username: str, host: str):
     -email: EmailStr, the user's email address that they entered when signing up for an account.
     -username: str, the username of the user who is trying to sign up for an account. This will be used in
     conjunction with host (see below) and token_verification (see below) as part of a URL that will be sent
-    via email to verify their identity and allow them access into our system.
+    via email to verify their identity and allow them to access into our system.
 
     :param email: EmailStr: Specify the email address of the recipient
     :param username: str: Pass the username to the template

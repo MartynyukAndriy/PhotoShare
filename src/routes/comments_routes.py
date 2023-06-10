@@ -1,12 +1,15 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, Path, HTTPException, status
-from fastapi_limiter import RateLimiter
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
+from src.database.models import User, Role
 from src.schemas.comment_schemas import CommentResponse, CommentModel
 from src.repository import comments as repository_comments
+from src.services.auth import auth_service
+from src.services.roles import RolesAccess
 
 router = APIRouter(prefix='/comments', tags=['comments'])
 

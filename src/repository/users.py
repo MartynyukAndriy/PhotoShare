@@ -34,7 +34,6 @@ async def create_user(body: UserModel, db: Session) -> User:
     else:
         new_user = User(**body.dict(),  role='admin')
 
-    new_user = User(**body.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

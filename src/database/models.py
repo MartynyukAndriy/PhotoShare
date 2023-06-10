@@ -1,22 +1,67 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum
-from sqlalchemy.orm import relationship, declarative_base
-from src.database.roles import Role
+import enum
+
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Boolean, Enum
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.sql.schema import Table
 
 Base = declarative_base()
 
 
-class Picture(Base):
-    __tablename__ = 'pictures'
-    id = Column(Integer, primary_key=True)
-    description = Column(Text, nullable=True)
+class Comment(Base):
+
+    __tablename__ = 'comments'
+
+    id = Column(Integer, primary_key=True, index=True)
+    comment = Column(String(255))
+    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    user = relationship('User', backref="comments")
+    image_id = Column('image_id', ForeignKey('images.id', ondelete='CASCADE'), default=None)
+    image = relationship('Image', backref="comments")
+
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
-class TransformedPicture(Base):
-    __tablename__ = 'transformed_pictures'
+class Image(Base):
+    __tablename__ = "images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String(300), unique=True, index=True)
+    description = Column(String(500), nullable=True)
+    public_name = Column(String(), unique=True)
+    # user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    # user = relationship('User', backref="comments")
+    created_at = Column('created_at', DateTime, default=func.now())
+    updated_at = Column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+
+
+image_m2m_tag = Table(
+    "image_m2m_tag",
+    Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("image_id", Integer, ForeignKey("images.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
+)
+
+
+class Tag(Base):
+    __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
-    true_img_id = Column(Integer, ForeignKey('pictures.id', ondelete='CASCADE'), default=None)
-    transform_img_url = Column(String(), nullable=False)
-    picture = relationship('Picture', backref='transformed_pictures')
+    name = Column(String(25), nullable=False, unique=True)
+
+
+class TransformedImage(Base):
+    __tablename__ = 'transformed_images'
+    id = Column(Integer, primary_key=True)
+    transform_image_url = Column(String(), nullable=False)
+    image_id = Column(Integer, ForeignKey('images.id', ondelete='CASCADE'), default=None)
+    image = relationship('Image', backref='transformed_images')
+
+
+class Role(enum.Enum):
+    admin: str = 'admin'
+    moderator: str = 'moderator'
+    user: str = 'user'
 
 
 class User(Base):
@@ -27,7 +72,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
+    role = Column('role', Enum(Role), default=Role.user)
     confirmed = Column(Boolean, default=False)
+    banned = Column(Boolean, default=False)
 
-    # TODO add roles
-    role = Column("role", Enum(Role), default=Role.user)

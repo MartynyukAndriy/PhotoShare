@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from src.database.models.users_model import Role
+from src.database.models import Role
 
 
 class UserModel(BaseModel):
