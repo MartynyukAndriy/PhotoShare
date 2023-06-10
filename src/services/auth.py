@@ -5,7 +5,8 @@ from typing import Optional
 import redis
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+# from jose import JWTError, jwt
+import jose
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 

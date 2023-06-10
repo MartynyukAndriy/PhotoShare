@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from src.routes import transformed_images, auth, tags, comments_routes
+from src.routes import transformed_images, auth, tags, comments_routes, images
 
 app = FastAPI()
 
@@ -15,6 +15,7 @@ app.include_router(comments_routes.router, prefix='/api')
 app.include_router(transformed_images.router, prefix='/api')
 app.include_router(auth.router, prefix='/api')
 app.include_router(tags.router, prefix='/api')
+app.include_router(images.router, prefix='/api')
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from src.services.auth import auth_service
 
 
 class RolesAccess:
-    def __int__(self, allowed_role: List[Role]):
+    def __init__(self, allowed_role: List[Role]):
         self.allowed_roles = allowed_role
 
     async def __call__(self, request: Request, current_user: User = Depends(auth_service.get_current_user)):
