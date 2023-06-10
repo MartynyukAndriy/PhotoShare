@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.database.models.user_model import User, Role
+from src.database.models import User, Role
 from src.schemas.rating_schemas import RatingModel, RatingResponse
 from src.repository import ratings as repository_ratings
 from src.conf.messages import AuthMessages

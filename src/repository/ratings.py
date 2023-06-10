@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 
-from src.database.rating_models import Rating, User
+from src.database.models import Rating, User
 from src.schemas.rating_schemas import RatingModel
 
 
