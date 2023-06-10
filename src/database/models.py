@@ -1,7 +1,8 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
+from src.database.roles import Role
 
-from src.database.db import Base, engine
+Base = declarative_base()
 
 
 class Picture(Base):
@@ -18,4 +19,15 @@ class TransformedPicture(Base):
     picture = relationship('Picture', backref='transformed_pictures')
 
 
-Base.metadata.create_all(bind=engine)
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50))
+    email = Column(String(250), nullable=False, unique=True)
+    password = Column(String(255), nullable=False)
+    avatar = Column(String(255), nullable=True)
+    refresh_token = Column(String(255), nullable=True)
+    confirmed = Column(Boolean, default=False)
+
+    # TODO add roles
+    role = Column("role", Enum(Role), default=Role.user)
