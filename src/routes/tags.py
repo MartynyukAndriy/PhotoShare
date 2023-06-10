@@ -20,30 +20,29 @@ access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_delete = RolesAccess([Role.admin, Role.moderator])
 
 
-@router.get("/", response_model=List[TagResponse])
-async def read_tags(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@router.get("/", response_model=List[TagResponse], dependencies=[Depends(access_get)])
+async def read_tags(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     tags = await repository_tags.get_tags(skip, limit, db)
     return tags
 
 
-@router.get("/{tag_id}", response_model=TagResponse)
-async def read_tag(tag_id: int, db: Session = Depends(get_db)):
+@router.get("/{tag_id}", response_model=TagResponse, dependencies=[Depends(access_get)])
+async def read_tag(tag_id: int, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     tag = await repository_tags.get_tag(tag_id, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
     return tag
 
 
-@router.post("/", response_model=TagResponse)
+@router.post("/", response_model=TagResponse, dependencies=[Depends(access_create)])
 async def create_tag(body: TagModel, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     tag = await repository_tags.create_tag(body, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=AuthMessages.verification_error)
 
 
-@router.put("/{tag_id}", response_model=TagResponse)
-async def update_tag(body: TagModel, tag_id: int, db: Session = Depends(get_db),
-                     _: User = Depends(auth_service.get_current_user)):
+@router.put("/{tag_id}", response_model=TagResponse, dependencies=[Depends(access_update)])
+async def update_tag(body: TagModel, tag_id: int, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     tag = await repository_tags.update_tag(tag_id, body, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -51,7 +50,7 @@ async def update_tag(body: TagModel, tag_id: int, db: Session = Depends(get_db),
     return tag
 
 
-@router.delete("/{tag_id}", response_model=TagResponse)
+@router.delete("/{tag_id}", response_model=TagResponse, dependencies=[Depends(access_delete)])
 async def remove_tag(tag_id: int, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     tag = await repository_tags.remove_tag(tag_id, db)
     if tag is None:
