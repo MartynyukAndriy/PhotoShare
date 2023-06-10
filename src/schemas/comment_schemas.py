@@ -1,5 +1,3 @@
-from datetime import date
-
 from pydantic import BaseModel, Field
 
 from src.schemas.user_schemas import UserResponse
@@ -15,7 +13,7 @@ class CommentResponse(BaseModel):
     id: int = 1
     comment: str = 'My comment'
     user: UserResponse
-    picture: PictureResponse
+    # picture: PictureResponse
 
     class Config:
         orm_mode = True

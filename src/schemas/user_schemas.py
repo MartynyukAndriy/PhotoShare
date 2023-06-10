@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from src.database.models.transformed_image_model import Role
+from src.database.models.user_model import Role
 
 
 class UserModel(BaseModel):

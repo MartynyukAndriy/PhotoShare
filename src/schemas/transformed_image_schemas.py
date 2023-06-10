@@ -9,7 +9,7 @@ class TransformedImageModel(BaseModel):
 
 class TransformedImageResponse(BaseModel):
     id: int = 1
-    image: ImageResponse
+    # image: ImageResponse
     transform_image_url: HttpUrl
     qr_transformed_image: HttpUrl
 

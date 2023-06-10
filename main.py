@@ -12,7 +12,7 @@ def root():
 
 
 app.include_router(comments_routes.router, prefix='/api')
-app.include_router(transformed_picture.router, prefix='/api')
+app.include_router(transformed_images.router, prefix='/api')
 app.include_router(auth.router, prefix='/api')
 app.include_router(tags.router, prefix='/api')
 
