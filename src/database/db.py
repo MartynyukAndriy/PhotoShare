@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
-from sqlalchemy.exc import DatabaseError
+
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+from src.conf.config import settings
 
+SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True, max_overflow=5)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
