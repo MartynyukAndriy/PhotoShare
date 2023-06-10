@@ -1,8 +1,6 @@
-import logging
-
 from sqlalchemy.orm import Session
 
-from src.database.models.users_model import User
+from src.database.models import User
 from src.schemas.user_schemas import UserModel
 
 
@@ -47,10 +45,10 @@ async def update_token(user: User, token: str | None, db: Session) -> None:
     """
     The update_token function updates the refresh token for a user.
 
-    :param user: User: Get the user object from the database
-    :param token: str | None: Set the refresh_token field in the user model
-    :param db: Session: Commit the changes to the database
-    :return: None, so it's not a coroutine
+    :param user: User: Identify the user that is being updated
+    :param token: str | None: Pass in the token that is returned from the api
+    :param db: Session: Access the database
+    :return: Nothing
     """
     user.refresh_token = token
     db.commit()
@@ -61,11 +59,9 @@ async def confirmed_email(email: str, db: Session) -> None:
     The confirmed_email function takes in an email and a database session,
     and sets the confirmed field of the user with that email to True.
 
-
-    :param email: str: Get the user's email
-    :param db: Session: Access the database
-    :return: None
-    :doc-author: Trelent
+    :param email: str: Pass the email of the user to be confirmed
+    :param db: Session: Pass the database session to the function
+    :return: Nothing
     """
     user = await get_user_by_email(email, db)
     user.confirmed = True

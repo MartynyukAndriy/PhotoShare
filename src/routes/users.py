@@ -1,8 +1,15 @@
 from fastapi import APIRouter, Depends
 
+from src.database.roles import Role
+from src.services.roles import RolesAccess
 from src.database.models.users_model import User
 from src.schemas.user_schemas import UserResponse
 from src.services.auth import auth_service
+
+access_get = RolesAccess([Role.administrator, Role.moderator, Role.user])
+access_create = RolesAccess([Role.administrator, Role.moderator, Role.user])
+access_update = RolesAccess([Role.administrator, Role.moderator, Role.user])
+access_delete = RolesAccess([Role.administrator])
 
 router = APIRouter(prefix="/users", tags=["users"])
 
