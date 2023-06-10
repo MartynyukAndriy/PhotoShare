@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.database.models.image_model import Image
+from src.database.models import Image
 from src.schemas.image_schemas import ImageUpdateModel
 
 

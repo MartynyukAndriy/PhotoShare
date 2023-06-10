@@ -2,8 +2,7 @@ from typing import List, Type
 
 from sqlalchemy.orm import Session
 
-from src.database.models.user_model import User
-from src.database.models.tag_models import Tag
+from src.database.models import Tag
 from src.schemas.tag_schemas import TagModel
 
 

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from src.database.models.transformed_image_model import TransformedImage
+from src.database.models import TransformedImage
 from fastapi import Depends
 from src.database.db import get_db
 

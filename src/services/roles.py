@@ -3,7 +3,7 @@ from typing import List
 from fastapi import Request, Depends, HTTPException, status
 
 from src.conf.messages import RolesMessages
-from src.database.models.user_model import User, Role
+from src.database.models import User, Role
 from src.services.auth import auth_service
 
 
