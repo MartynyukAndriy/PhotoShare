@@ -23,24 +23,20 @@ async def create_tag(body: TagModel, db: Session) -> Tag:
     return tag
 
 
-async def update_tag(tag_id: int, body: TagModel, user: User, db: Session) -> Tag | None:
-    if user.role in ["administrator", "moderator"]:
-        tag = db.query(Tag).filter(Tag.id == tag_id).first()
-        if tag:
-            tag.name = body.name
-            db.commit()
-        return tag
-    else:
-        return None
+async def update_tag(tag_id: int, body: TagModel, db: Session) -> Tag | None:
+    #if user.role in ["administrator", "moderator"]:
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if tag:
+        tag.name = body.name
+        db.commit()
+    return tag
 
 
-async def remove_tag(tag_id: int, user: User, db: Session) -> Tag | None:
-    if user.role in ["administrator", "moderator"]:
-        tag = db.query(Tag).filter(Tag.id == tag_id).first()
-        if tag:
-            db.delete(tag)
-            db.commit()
-        return tag
-    else:
-        return None
+async def remove_tag(tag_id: int, db: Session) -> Tag | None:
+    # if user.role in ["administrator", "moderator"]:
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if tag:
+        db.delete(tag)
+        db.commit()
+    return tag
 
