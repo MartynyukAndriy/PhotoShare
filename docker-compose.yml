@@ -6,7 +6,7 @@ services:
     ports:
       - "6379:6379"
   postgres:
-    image: postgres:15
+    image: postgres:alpine3.17
     environment:
       POSTGRES_DB: ${POSTGRES_DB_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -14,4 +14,4 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - D:/Python/goit-python/Python_10/Web_Final_project/postgres-data:/var/lib/postgresql/data
+      - C:/Users/user/Desktop/Docker_project/postgres-data:/var/lib/postgresql/data

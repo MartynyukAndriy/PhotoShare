@@ -40,3 +40,10 @@ async def remove_tag(tag_id: int, db: Session) -> Tag | None:
         db.commit()
     return tag
 
+async def remove_tag(tag_id: int, db: Session) -> Tag | None:
+    # if user.role in ["administrator", "moderator"]:
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if tag:
+        db.delete(tag)
+        db.commit()
+    return tag

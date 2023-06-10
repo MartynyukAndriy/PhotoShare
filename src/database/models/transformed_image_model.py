@@ -10,4 +10,3 @@ class TransformedImage(Base):
     transform_image_url = Column(String(), nullable=False)
     image_id = Column(Integer, ForeignKey('images.id', ondelete='CASCADE'), default=None)
     image = relationship('Image', backref='transformed_images')
-    qr_transformed_image = Column(String(), default=None)

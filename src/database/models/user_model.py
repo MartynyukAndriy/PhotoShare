@@ -22,3 +22,4 @@ class User(Base):
     refresh_token = Column(String(255), nullable=True)
     role = Column('role', Enum(Role), default=Role.user)
     confirmed = Column(Boolean, default=False)
+    banned = Column(Boolean, default=False)
