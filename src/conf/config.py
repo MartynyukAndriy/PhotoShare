@@ -2,6 +2,10 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    # cloudinary_name = "dz5bwxxvu"
+    # cloudinary_api_key = 341439292695591
+    # cloudinary_api_secret = "bGnrqtSR0GOYR2LShrwr-U8gpVU"
+
     sqlalchemy_database_url: str = "postgresql+psycopg2://postgres:123456@localhost:5432/postgres"
     jwt_secret_key: str = "secret"
     jwt_algorithm: str = "HS256"
