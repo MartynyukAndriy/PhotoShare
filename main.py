@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
 
+from src.routes import images
+
 app = FastAPI()
 
 
@@ -9,5 +11,4 @@ def root():
     return {"message": "Welcome to FastAPI!"}
 
 
-if __name__ == '__main__':
-    uvicorn.run('main:app', reload=True)
+app.include_router(images.router, prefix='/api')
