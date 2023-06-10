@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from src.routes import transformed_picture, auth, tags, comments_routes
+from src.routes import transformed_images, auth, tags, comments_routes
 
 app = FastAPI()
 

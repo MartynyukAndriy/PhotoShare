@@ -1,6 +1,8 @@
 from datetime import date
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
+
+from src.schemas.user_schemas import UserResponse
 
 
 class CommentModel(BaseModel):

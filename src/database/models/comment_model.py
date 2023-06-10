@@ -12,8 +12,8 @@ class Comment(Base):
     comment = Column(String(255))
     user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
     user = relationship('User', backref="comments")
-    picture_id = Column('picture_id', ForeignKey('pictures.id', ondelete='CASCADE'), default=None)
-    picture = relationship('Picture', backref="comments")
+    image_id = Column('image_id', ForeignKey('images.id', ondelete='CASCADE'), default=None)
+    image = relationship('Image', backref="comments")
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.database.models import User
+from src.database.models.user_model import User
 from src.schemas.user_schemas import UserModel
 
 
@@ -34,7 +34,6 @@ async def create_user(body: UserModel, db: Session) -> User:
     else:
         new_user = User(**body.dict(),  role='admin')
 
-    new_user = User(**body.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
