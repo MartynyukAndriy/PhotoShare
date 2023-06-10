@@ -17,8 +17,4 @@ class Tag(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
-    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
-    user = relationship('User', backref="comments")
-    image_id = Column('image_id', ForeignKey('images.id', ondelete='CASCADE'), default=None)
-    image = relationship('Image', backref="comments")
 
