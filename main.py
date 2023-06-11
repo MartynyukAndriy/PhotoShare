@@ -1,6 +1,9 @@
+import redis.asyncio as redis
 import uvicorn
 from fastapi import FastAPI
+from fastapi_limiter import FastAPILimiter
 
+from src.conf.config import settings
 from src.routes import transformed_images, auth, tags, comments_routes, images
 
 app = FastAPI()
@@ -9,6 +12,12 @@ app = FastAPI()
 @app.get("/")
 def root():
     return {"message": "Welcome to FastAPI!"}
+
+
+@app.on_event("startup")
+async def startup():
+    r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    await FastAPILimiter.init(r)
 
 
 app.include_router(comments_routes.router, prefix='/api')
