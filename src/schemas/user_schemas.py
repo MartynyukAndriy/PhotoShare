@@ -13,7 +13,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
-    avatar: str
+    # avatar: str
     role: Role
 
     class Config:

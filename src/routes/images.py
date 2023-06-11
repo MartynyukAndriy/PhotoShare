@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from src.database.db import get_db
 from src.schemas.image_schemas import ImageAddResponse, ImageDb, ImageUpdateResponse, ImageUpdateModel, \
-    ImageDeleteResponse
+    ImageDeleteResponse, ImageAddModel
 from src.repository import images
 
 load_dotenv()
@@ -17,7 +17,7 @@ router = APIRouter(prefix='/images', tags=["images"])
 
 
 @router.post("/add", response_model=ImageAddResponse)
-async def upload_image(description: str, file: UploadFile = File(), db: Session = Depends(get_db)):
+async def upload_image(user_id: int, description: str, file: UploadFile = File(), db: Session = Depends(get_db)):
     cloudinary.config(
         cloud_name=os.environ.get('CLOUDINARY_NAME'),
         api_key=os.environ.get('CLOUDINARY_API_KEY'),
@@ -25,11 +25,13 @@ async def upload_image(description: str, file: UploadFile = File(), db: Session 
         secure=True
     )
 
+    public_name = file.filename.split(".")[0]
+
     r = cloudinary.uploader.upload(file.file, public_id=f'PhotoShare/{description}', overwrite=True)
     src_url = cloudinary.CloudinaryImage(f'PhotoShare/{description}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
 
-    image = await images.add_image(db, description, src_url)
+    image = await images.add_image(db, description, src_url, public_name, user_id)
 
     return {"image": image, "detail": "Image was successfully added"}
 

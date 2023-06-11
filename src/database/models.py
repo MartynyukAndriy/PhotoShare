@@ -29,8 +29,8 @@ class Image(Base):
     url = Column(String(300), unique=True, index=True)
     description = Column(String(500), nullable=True)
     public_name = Column(String(), unique=True)
-    # user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
-    # user = relationship('User', backref="comments")
+    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    user = relationship('User', backref="images")
     created_at = Column('created_at', DateTime, default=func.now())
     updated_at = Column('updated_at', DateTime, default=func.now(), onupdate=func.now())
 
