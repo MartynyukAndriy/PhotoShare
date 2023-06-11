@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Session
 
 from src.database.models import Image
-from src.schemas.image_schemas import ImageUpdateModel
+from src.schemas.image_schemas import ImageUpdateModel, ImageAddModel
 
 
-async def add_image(db: Session, description: str, url: str, public_name: str):
+async def add_image(db: Session, description: str, url: str, public_name: str, user_id: int):
     # Save picture in the database
-    db_image = Image(description=description, url=url, public_name=public_name)
+    db_image = Image(description=description, url=url, public_name=public_name, user_id=user_id)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)
