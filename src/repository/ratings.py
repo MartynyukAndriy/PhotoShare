@@ -7,6 +7,8 @@ from sqlalchemy import and_
 from src.database.models import Rating, User
 from src.schemas.rating_schemas import RatingModel
 
+DICT_WITH_STARS = {"one_star": 1, "two_stars": 2, "three_stars": 3, "four_srats": 4, "five_stars": 5}
+
 
 async def get_average_rating(image_id, db: Session):
     ratings = db.query(Rating).filter(Rating.image_id == image_id).all()
@@ -16,7 +18,7 @@ async def get_average_rating(image_id, db: Session):
     for element in ratings:
         for key, value in element.items():
             if value:
-                sum_user_rating += int(key)
+                sum_user_rating += DICT_WITH_STARS[key]
     average_user_rating = sum_user_rating / len(ratings)
     return average_user_rating
 

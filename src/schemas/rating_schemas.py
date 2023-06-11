@@ -13,7 +13,7 @@ class ViewRatingModel(BaseModel):
 
 
 class RatingModel(BaseModel):
-    rating: Dict
+    rating: ViewRatingModel
     user_id: int = Field(1, gt=0)
     image_id: int = Field(1, gt=0)
 
