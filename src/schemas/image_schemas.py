@@ -15,6 +15,7 @@ class ImageDb(BaseModel):
     id: int
     url: str
     description: str
+    user_id: int
     created_at: datetime
     updated_at: datetime
 
