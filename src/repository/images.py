@@ -4,9 +4,9 @@ from src.database.models import Image
 from src.schemas.image_schemas import ImageUpdateModel
 
 
-async def add_image(db: Session, description: str, url: str):
+async def add_image(db: Session, description: str, url: str, public_name: str):
     # Save picture in the database
-    db_image = Image(description=description, url=url)
+    db_image = Image(description=description, url=url, public_name=public_name)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)

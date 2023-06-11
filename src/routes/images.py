@@ -25,11 +25,13 @@ async def upload_image(description: str, file: UploadFile = File(), db: Session 
         secure=True
     )
 
+    public_name = file.filename.split(".")[0]
+
     r = cloudinary.uploader.upload(file.file, public_id=f'PhotoShare/{description}', overwrite=True)
     src_url = cloudinary.CloudinaryImage(f'PhotoShare/{description}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
 
-    image = await images.add_image(db, description, src_url)
+    image = await images.add_image(db, description, src_url, public_name)
 
     return {"image": image, "detail": "Image was successfully added"}
 
