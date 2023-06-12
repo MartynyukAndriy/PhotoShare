@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi_limiter import FastAPILimiter
 
 from src.conf.config import settings
-from src.routes import transformed_images, auth, tags, comments_routes, images
+from src.routes import transformed_images, auth, tags, comments_routes, images, ratings
 
 app = FastAPI()
 
@@ -25,6 +25,8 @@ app.include_router(transformed_images.router, prefix='/api')
 app.include_router(auth.router, prefix='/api')
 app.include_router(tags.router, prefix='/api')
 app.include_router(images.router, prefix='/api')
+app.include_router(ratings.router, prefix='/api')
+
 
 
 if __name__ == '__main__':
