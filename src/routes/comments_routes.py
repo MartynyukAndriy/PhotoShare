@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.database.models import User, Role
-from src.schemas.comment_schemas import CommentResponse, CommentModel
+from src.schemas.comment_schemas import CommentResponse, CommentModel, CommentDeleteResponse
 from src.repository import comments as repository_comments
 from src.services.auth import auth_service
 from src.services.roles import RolesAccess
@@ -55,7 +55,7 @@ async def update_comment(body: CommentModel, comment_id: int = Path(ge=1), db: S
     return comment
 
 
-@router.delete('/{comment_id}', response_model=CommentResponse, dependencies=[Depends(access_delete)])
+@router.delete('/{comment_id}', response_model=CommentDeleteResponse, dependencies=[Depends(access_delete)])
 async def remove_comment(comment_id: int = Path(ge=1), db: Session = Depends(get_db),
                          _: User = Depends(auth_service.get_current_user)):
     comment = await repository_comments.remove_comment(comment_id, db)

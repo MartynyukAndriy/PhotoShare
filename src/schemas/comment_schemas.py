@@ -18,3 +18,12 @@ class CommentResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class CommentDeleteResponse(BaseModel):
+    id: int = 1
+    comment: str = 'My comment'
+
+    class Config:
+        orm_mode = True
+
