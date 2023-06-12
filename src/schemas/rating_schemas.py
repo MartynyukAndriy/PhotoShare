@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Dict
 
-from user_schemas import UserResponse
+from src.schemas.user_schemas import UserResponse
 
 
 class ViewRatingModel(BaseModel):
