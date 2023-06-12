@@ -22,3 +22,8 @@ class ImageDb(BaseModel):
 class ImageAddResponse(BaseModel):
     image: ImageDb
     detail: str = "Image was successfully added"
+
+
+
+
+
