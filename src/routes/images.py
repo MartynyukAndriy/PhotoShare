@@ -39,7 +39,7 @@ async def upload_image(description: str, file: UploadFile = File(), db: Session 
 
     correct_public_name = await images_service_change_name(public_name, db)
 
-    file_name = correct_public_name + str(User.username)
+    file_name = correct_public_name + "_" + str(current_user.username)
     r = cloudinary.uploader.upload(file.file, public_id=f'PhotoShare/{file_name}', overwrite=True)
     src_url = cloudinary.CloudinaryImage(f'PhotoShare/{file_name}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
