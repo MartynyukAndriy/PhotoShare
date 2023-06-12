@@ -19,8 +19,10 @@ access_create = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_delete = RolesAccess([Role.admin, Role.moderator])
 
+
 @router.get("/image/{image_id}", response_model=int, dependencies=[Depends(access_get)])
-async def get_common_rating(image_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+async def get_common_rating(image_id: int, db: Session = Depends(get_db),
+                            current_user: User = Depends(auth_service.get_current_user)):
     tags = await repository_ratings.get_average_rating(image_id, db)
     return tags
 
@@ -34,23 +36,29 @@ async def read_tag(rating_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{image_id}", response_model=RatingResponse, dependencies=[Depends(access_create)])
-async def create_rating(image_id, body: RatingModel, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+async def create_rating(image_id, body: RatingModel, db: Session = Depends(get_db),
+                        current_user: User = Depends(auth_service.get_current_user)):
     rating = await repository_ratings.create_rating_from_user(image_id, body, current_user, db)
     if rating is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't rate your images or rate more than 2 times")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="You can't rate your images or rate more than 2 times")
 
 
 @router.put("/{rating_id}", response_model=RatingResponse, dependencies=[Depends(access_update)])
-async def update_rating(body: RatingModel, rating_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+async def update_rating(body: RatingModel, rating_id: int, db: Session = Depends(get_db),
+                        current_user: User = Depends(auth_service.get_current_user)):
     rating = await repository_ratings.update_rating(rating_id, body, db)
     if rating is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found or you don't have enough rules to update")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Rating not found or you don't have enough rules to update")
     return rating
 
 
 @router.delete("/{rating_id}", response_model=RatingResponse, dependencies=[Depends(access_delete)])
-async def remove_rating(rating_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
+async def remove_rating(rating_id: int, db: Session = Depends(get_db),
+                        current_user: User = Depends(auth_service.get_current_user)):
     rating = await repository_ratings.remove_rating(rating_id, db)
     if rating is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found or you don't have enough rules to delete")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Rating not found or you don't have enough rules to delete")
     return rating

@@ -2,10 +2,6 @@ from pydantic import BaseModel
 from pydantic.schema import datetime
 
 
-class ImageAddModel(BaseModel):
-    description: str
-
-
 class ImageUpdateModel(BaseModel):
     id: int
     description: str
@@ -26,13 +22,3 @@ class ImageDb(BaseModel):
 class ImageAddResponse(BaseModel):
     image: ImageDb
     detail: str = "Image was successfully added"
-
-
-class ImageUpdateResponse(BaseModel):
-    image: ImageDb
-    detail: str = "Image was successfully updated"
-
-
-class ImageDeleteResponse(BaseModel):
-    image: ImageDb
-    detail: str = "Image was successfully deleted"
