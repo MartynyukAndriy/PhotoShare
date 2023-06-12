@@ -39,7 +39,6 @@ async def create_tag(body: TagModel, db: Session = Depends(get_db), _: User = De
     tag = await repository_tags.create_tag(body, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=AuthMessages.verification_error)
-    return tag
 
 
 @router.put("/{tag_id}", response_model=TagResponse, dependencies=[Depends(access_update)])

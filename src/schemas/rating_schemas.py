@@ -1,23 +1,28 @@
-from typing import Optional
 from pydantic import BaseModel, Field
+from typing import Dict
+
+from user_schemas import UserResponse
+
+
+class ViewRatingModel(BaseModel):
+    one_star: bool
+    two_stars: bool
+    three_stars: bool
+    four_stars: bool
+    five_stars: bool
 
 
 class RatingModel(BaseModel):
-    one_star: Optional[bool] = False
-    two_stars: Optional[bool] = False
-    three_stars: Optional[bool] = False
-    four_stars: Optional[bool] = False
-    five_stars: Optional[bool] = False
+    rating: ViewRatingModel
+    user_id: int = Field(1, gt=0)
+    image_id: int = Field(1, gt=0)
 
-class RatingResponse(RatingModel):
+
+class RatingResponse(BaseModel):
     id: int = 1
-    one_star: bool = False
-    two_stars: bool = False
-    three_stars: bool = False
-    four_stars: bool = False
-    five_stars: bool = False
-    user_id: int = 1
-    image_id: int = 1
+    rating: dict = {"one_star": False, "two_stars": False, "three_stars": False, "four_srats": False,
+                    "five_stars": False}
+    user: UserResponse
 
     class Config:
         orm_mode = True

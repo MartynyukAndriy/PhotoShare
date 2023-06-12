@@ -80,14 +80,10 @@ class User(Base):
 class Rating(Base):
 
     __tablename__ = 'ratings'
-    id = Column(Integer, primary_key=True)
-    one_star = Column(Boolean, default=False)
-    two_stars = Column(Boolean, default=False)
-    three_stars = Column(Boolean, default=False)
-    four_stars = Column(Boolean, default=False)
-    five_stars = Column(Boolean, default=False)
+
+    id = Column(Integer, primary_key=True, index=True)
+    rating = Column(PickleType)
     user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
     user = relationship('User', backref="ratings")
     image_id = Column('image_id', ForeignKey('images.id', ondelete='CASCADE'), default=None)
     image = relationship('Image', backref="ratings")
-    

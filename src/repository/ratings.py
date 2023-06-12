@@ -4,27 +4,22 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 
-from src.database.models import Rating, User, Image
+from src.database.models import Rating, User
 from src.schemas.rating_schemas import RatingModel
+
+DICT_WITH_STARS = {"one_star": 1, "two_stars": 2, "three_stars": 3, "four_srats": 4, "five_stars": 5}
 
 
 async def get_average_rating(image_id, db: Session):
-    image_ratings = db.query(Rating).filter(Rating.image_id == image_id).all()
-    if len(image_ratings) == 0:
+    ratings = db.query(Rating).filter(Rating.image_id == image_id).all()
+    if len(ratings) == 0:
         return 0
     sum_user_rating = 0
-    for element in image_ratings:
-        if element.one_star:
-            sum_user_rating += 1
-        if element.two_stars:
-            sum_user_rating += 2
-        if element.three_stars:
-            sum_user_rating += 3
-        if element.four_stars:
-            sum_user_rating += 4
-        if element.five_stars:
-            sum_user_rating += 5
-    average_user_rating = sum_user_rating / len(image_ratings)
+    for element in ratings:
+        for key, value in element.items():
+            if value:
+                sum_user_rating += DICT_WITH_STARS[key]
+    average_user_rating = sum_user_rating / len(ratings)
     return average_user_rating
 
 
@@ -32,47 +27,34 @@ async def get_rating(rating_id: int, db: Session) -> Rating:
     return db.query(Rating).filter(Rating.id == rating_id).first()
 
 
-async def create_rating(image_id: int, body: RatingModel, user: User, db: Session) -> Rating:
-    image_in_database = db.query(Image).filter(Image.id == image_id).first()
-    if image_in_database.user_id == user.id:
+async def create_rating_from_user(image_id, body: RatingModel, user: User, db: Session) -> Rating | None:
+    if user.id == body.user_id:
         return None
-    sum_of_rates = 0
-    for el in body:
-        if el[1]:
-            sum_of_rates += 1
-    if sum_of_rates > 1:
-        return None
-    rating_in_database = db.query(Rating).filter(Rating.image_id == image_id, Rating.user_id == user.id).first()
+    rating_in_database = db.query(Rating).filter(Rating.image_id == image_id, Rating.user_id ==  body.user_id).first()
     if rating_in_database:
-        return rating_in_database
-    rating = Rating(one_star=body.one_star, two_stars=body.two_stars, three_stars=body.three_stars, user_id=user.id, image_id=image_id)
-    db.add(rating)
-    db.commit()
-    db.refresh(rating)
-    return rating
-
-
-async def update_rating(rating_id: int, body: RatingModel, db: Session):
-    sum_of_rates = 0
-    for el in body:
-        if el[1]:
-            sum_of_rates += 1
-    if sum_of_rates > 1:
         return None
+    rating_from_user = Rating(rating=body.rating.dict())
+    db.add(rating_from_user)
+    db.commit()
+    db.refresh(rating_from_user)
+    return rating_from_user
+
+
+
+async def update_rating(rating_id: int, body: RatingModel, db: Session) -> Rating | None:
     rating = db.query(Rating).filter(Rating.id == rating_id).first()
     if rating:
-        rating.one_star = body.one_star
-        rating.two_stars = body.two_stars
-        rating.three_stars = body.three_stars
-        rating.four_stars = body.four_stars
-        rating.five_stars = body.five_stars
+        rating.rating = body.rating.dict()
         db.commit()
     return rating
 
 
-async def remove_rating(rating_id: int, db: Session):
+
+async def remove_rating(rating_id: int, db: Session)  -> Rating | None:
     rating = db.query(Rating).filter(Rating.id == rating_id).first()
     if rating:
         db.delete(rating)
         db.commit()
     return rating
+
+
