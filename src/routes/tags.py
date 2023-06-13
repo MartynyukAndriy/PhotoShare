@@ -16,7 +16,7 @@ router = APIRouter(prefix='/tags', tags=["tags"])
 
 access_get = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_create = RolesAccess([Role.admin, Role.moderator, Role.user])
-access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
+access_update = RolesAccess([Role.admin, Role.moderator])
 access_delete = RolesAccess([Role.admin, Role.moderator])
 
 
@@ -88,7 +88,7 @@ async def update_tag(body: TagModel, tag_id: int, db: Session = Depends(get_db),
     return tag
 
 
-@router.delete("/{tag_id}", response_model=TagResponse) #, dependencies=[Depends(access_delete)])
+@router.delete("/{tag_id}", response_model=TagResponse, dependencies=[Depends(access_delete)])
 async def remove_tag(tag_id: int, db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     """
     The remove_tag function removes a tag from the database.
