@@ -11,10 +11,14 @@ class UserModel(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    username: str
-    email: EmailStr
-    # avatar: str
-    role: Role
+    username: str = "Bob"
+    email: EmailStr = "bob@gmail.com"
+    role: Role = "user"
 
     class Config:
         orm_mode = True
+
+
+class UserUpdate(BaseModel):
+    username: str
+    email: EmailStr

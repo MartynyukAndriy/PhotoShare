@@ -71,10 +71,13 @@ class User(Base):
     email = Column(String(250), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     avatar = Column(String(255), nullable=True)
+    photo_count = Column(Integer)
     refresh_token = Column(String(255), nullable=True)
     role = Column('role', Enum(Role), default=Role.user)
     confirmed = Column(Boolean, default=False)
     banned = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class Rating(Base):

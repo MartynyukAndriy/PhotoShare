@@ -1,7 +1,9 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 
 from src.database.models import User
-from src.schemas.user_schemas import UserModel
+from src.schemas.user_schemas import UserModel, UserUpdate
 
 
 async def get_user_by_email(email: str, db: Session) -> User | None:
@@ -65,3 +67,35 @@ async def confirmed_email(email: str, db: Session) -> None:
     user = await get_user_by_email(email, db)
     user.confirmed = True
     db.commit()
+
+
+async def get_user_info(username: str, db: Session):
+
+    """
+    The get_user_info function takes in a username and returns the user's information.
+        Args:
+            username (str): The name of the user to be retrieved from the database.
+    :param username: str: Specify the username of the user
+    :param db: Session: Pass the database session to the function
+    :return: A dictionary of the user's information
+    """
+    user = db.query(User).filter(User.username == username).first()
+    return user
+
+
+async def update_user_info(body: UserUpdate, username: str, db: Session):
+    """
+    Update the user information with the provided updated fields based on the username.
+    :param body: UserUpdate: Updated fields for the user
+    :param username: str: User's username
+    :param db: Session: Access the database
+    :return: Updated user object
+    """
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.username = body.username
+    user.email = body.email
+    db.commit()
+    return user
