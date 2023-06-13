@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from src.database.db import get_db
-from src.database.models.user_model import User, Role
+from src.database.models import User, Role
 from src.repository.users import get_user_info, update_user_info
 from src.schemas.user_schemas import UserResponse, UserUpdate
 from src.services.auth import auth_service
