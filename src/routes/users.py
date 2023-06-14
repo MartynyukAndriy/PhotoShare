@@ -14,7 +14,7 @@ access_create = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_delete = RolesAccess([Role.admin])
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["Users profile"])
 
 
 @router.get("/me/", response_model=UserResponse)
