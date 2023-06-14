@@ -26,4 +26,3 @@ class CommentDeleteResponse(BaseModel):
 
     class Config:
         orm_mode = True
-

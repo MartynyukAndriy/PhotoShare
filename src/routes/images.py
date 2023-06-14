@@ -2,31 +2,54 @@ import os
 
 import cloudinary
 import cloudinary.uploader
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File, status
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
 from src.database.db import get_db
 from src.database.models import User, Role
-from src.schemas.image_schemas import ImageAddResponse, ImageUpdateModel
+from src.schemas.image_schemas import ImageAddResponse, ImageUpdateModel, ImageAddModel, ImageAddTagResponse, \
+    ImageAddTagModel, ImageGetAllResponse, ImageGetResponse, ImageDeleteResponse, ImageUpdateDescrResponse, \
+    ImageAdminGetAllResponse
 from src.repository import images
 from src.services.auth import auth_service
-from src.services.images import images_service_id_exists, images_service_change_name
+from src.services.images import images_service_change_name, normalize_tags
 from src.services.roles import RolesAccess
 
 load_dotenv()
 
 router = APIRouter(prefix='/images', tags=["images"])
 
-access_get = RolesAccess([Role.admin, Role.moderator, Role.user])
-access_create = RolesAccess([Role.admin, Role.moderator, Role.user])
-access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
-access_delete = RolesAccess([Role.admin, Role.moderator, Role.user])
+access_all = RolesAccess([Role.admin, Role.moderator, Role.user])
+access_admin = RolesAccess([Role.admin])
+
+
+@router.get("", response_model=ImageGetAllResponse, dependencies=[Depends(access_all)])
+async def get_images(db: Session = Depends(get_db),
+                     current_user: User = Depends(auth_service.get_current_user)):
+    user_images = await images.get_images(db, current_user)
+    return {"images": user_images}
+
+
+@router.get("/image_id/{id}", response_model=ImageGetResponse, dependencies=[Depends(access_all)])
+async def get_image(id: int, db: Session = Depends(get_db),
+                    current_user: User = Depends(auth_service.get_current_user)):
+    print('Usual GET')
+    user_image, ratings, comments = await images.get_image(db, id, current_user)
+    return {"image": user_image, "ratings": ratings, "comments": comments}
+
+
+@router.get("/user_id/{user_id}", response_model=ImageAdminGetAllResponse, dependencies=[Depends(access_admin)])
+async def admin_get_images(user_id: int, db: Session = Depends(get_db),
+                           current_user: User = Depends(auth_service.get_current_user)):
+    print("Started")
+    user_response = await images.admin_get_image(db, user_id)
+    return {"images": user_response}
 
 
 @router.post("/add", response_model=ImageAddResponse, status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(access_create)])
-async def upload_image(description: str, file: UploadFile = File(), db: Session = Depends(get_db),
+             dependencies=[Depends(access_all)])
+async def upload_image(body: ImageAddModel = Depends(), file: UploadFile = File(), db: Session = Depends(get_db),
                        current_user: User = Depends(auth_service.get_current_user)):
     cloudinary.config(
         cloud_name=os.environ.get('CLOUDINARY_NAME'),
@@ -34,6 +57,8 @@ async def upload_image(description: str, file: UploadFile = File(), db: Session 
         api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
         secure=True
     )
+
+    correct_tags = await normalize_tags(body)
 
     public_name = file.filename.split(".")[0]
 
@@ -44,46 +69,29 @@ async def upload_image(description: str, file: UploadFile = File(), db: Session 
     src_url = cloudinary.CloudinaryImage(f'PhotoShare/{file_name}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
 
-    image = await images.add_image(db, description, src_url, correct_public_name, current_user)
+    image = await images.add_image(db, body, correct_tags, src_url, correct_public_name, current_user)
 
     return {"image": image, "detail": "Image was successfully added"}
 
 
-@router.get("", dependencies=[Depends(access_get)])
-async def get_images(db: Session = Depends(get_db),
-                     current_user: User = Depends(auth_service.get_current_user)):
-    user_images = await images.get_images(db, current_user)
-    return user_images
+@router.put("/update_description/{image_id}", response_model=ImageUpdateDescrResponse,
+            dependencies=[Depends(access_all)])
+async def update_description(image_id: int, image_info: ImageUpdateModel, db: Session = Depends(get_db),
+                             current_user: User = Depends(auth_service.get_current_user)):
+    user_image = await images.update_image(db, image_id, image_info, current_user)
+    return {"id": user_image.id, "description": user_image.description, "detail": "Image was successfully updated"}
 
 
-@router.get("/{image_id}", dependencies=[Depends(access_get)])
-async def get_image(id: int, db: Session = Depends(get_db),
-                    current_user: User = Depends(auth_service.get_current_user)):
-    id_exists = await images_service_id_exists(id, db)
-    if id_exists:
-        user_image = await images.get_image(db, id, current_user)
-        return user_image
-    else:
-        return "Sorry, there is no image with this id"
+@router.put("/update_tags/{image_id}", response_model=ImageAddTagResponse, dependencies=[Depends(access_all)])
+async def add_tag(image_id, body: ImageAddTagModel = Depends(), db: Session = Depends(get_db),
+                  current_user: User = Depends(auth_service.get_current_user)):
+    image = await images.add_tag(db, image_id, body, current_user)
+    return {"id": image.id, "tags": image.tags, "detail": "Image was successfully updated"}
 
 
-@router.put("/{image_info.id}", dependencies=[Depends(access_update)])
-async def update_image(image_info: ImageUpdateModel, db: Session = Depends(get_db),
-                       current_user: User = Depends(auth_service.get_current_user)):
-    id_exists = await images_service_id_exists(image_info.id, db)
-    if id_exists:
-        user_image = await images.update_image(db, image_info, current_user)
-        return {"image": user_image, "detail": "Image was successfully updated"}
-    else:
-        return "Sorry, there is no image with this id"
-
-
-@router.delete("/{id}", dependencies=[Depends(access_delete)])
+@router.delete("/{id}", response_model=ImageDeleteResponse, dependencies=[Depends(access_all)])
 async def delete_image(id: int, db: Session = Depends(get_db),
                        current_user: User = Depends(auth_service.get_current_user)):
-    id_exists = await images_service_id_exists(id, db)
-    if id_exists:
-        user_image = await images.delete_image(db, id, current_user)
-        return {"image": user_image, "detail": "Image was successfully deleted"}
-    else:
-        return "Sorry, there is no image with this id"
+    await images_service_id_exists(id, db)
+    user_image = await images.delete_image(db, id, current_user)
+    return {"image": user_image, "detail": "Image was successfully deleted"}
