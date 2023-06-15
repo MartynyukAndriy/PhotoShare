@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.database.models import Image, User, Tag, Comment, Role
 from src.repository.ratings import get_average_rating
 from src.schemas.image_schemas import ImageUpdateModel, ImageAddModel, ImageAddTagModel
+from src.services.images import images_service_normalize_tags
 
 
 async def get_images(db: Session, user: User):
@@ -81,45 +82,50 @@ async def admin_get_image(db: Session, user_id: id):
 
 
 async def add_image(db: Session, image: ImageAddModel, tags: list[str], url: str, public_name: str, user: User):
+
     """
-    The add_image function takes in a database session, an ImageAddModel object, a list of tags (strings),
-    a url string, and the user who is uploading the image. It then checks to see if there are any tags that are longer than 25 characters.
-    If so it raises an HTTPException with status code 422 and detail message; Tag length should not exceed 25 characters.
-    If not it creates new Tag objects for each tag in the list of tags passed into add_image.
-    Then it queries all Tags from the database whose names match those in our list of tags we just created Tag objects for.
-    Finally we create a new Image object using
+    The add_image function adds an image to the database.
+        Args:
+            db (Session): The database session object.
+            image (ImageAddModel): The ImageAddModel object containing the information about the new image.
+            tags (list[str]): A list of strings representing tags for this new image.  Each tag is a string with a maximum length of 25 characters, and there can be up to 5 tags per picture in our system.  If more than 5 are provided, only the first five will be used and saved in our system; any additional ones will be ignored by this function call but not discarded from
 
     :param db: Session: Access the database
     :param image: ImageAddModel: Get the description of the image
-    :param tags: list[str]: Pass a list of tags to the function
-    :param url: str: Store the url of the image in the database
-    :param public_name: str: Store the name of the image file
-    :param user: User: Get the user id of the logged in user
-    :return: An image object
+    :param tags: list[str]: Add tags to the image
+    :param url: str: Store the url of the image
+    :param public_name: str: Save the name of the image in the database
+    :param user: User: Get the user id from the database
+    :return: A tuple of two elements: the image and a string
     """
-
     if not user:
         return None
 
+    detail = ""
+    num_tags = 0
+    image_tags = []
     for tag in tags:
         if len(tag) > 25:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail='Tag length should not exceed 25 characters'
-            )
+            tag = tag[0:25]
         if not db.query(Tag).filter(Tag.name == tag).first():
-            tag = Tag(name=tag)
-            db.add(tag)
+            db_tag = Tag(name=tag)
+            db.add(db_tag)
             db.commit()
-            db.refresh(tag)
+            db.refresh(db_tag)
+        if num_tags < 5:
+            image_tags.append(tag)
+        num_tags += 1
 
-    tags = db.query(Tag).filter(Tag.name.in_(tags)).all()
+    if num_tags >= 5:
+        detail = " But be attentive you can add only five tags to an image"
+
+    tags = db.query(Tag).filter(Tag.name.in_(image_tags)).all()
     # Save picture in the database
     db_image = Image(description=image.description, tags=tags, url=url, public_name=public_name, user_id=user.id)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)
-    return db_image
+    return db_image, detail
 
 
 async def update_image(db: Session, image_id, image: ImageUpdateModel, user: User):
@@ -154,39 +160,35 @@ async def update_image(db: Session, image_id, image: ImageUpdateModel, user: Use
 async def add_tag(db: Session, image_id, body: ImageAddTagModel, user: User):
     """
     The add_tag function adds tags to an image.
-        Args:
-            db (Session): The database session object.
-            image_id (int): The id of the image to add tags to.
-            body (ImageAddTagModel): A model containing a list of tag names as strings, which will be added to the specified image's tag list.
 
     :param db: Session: Access the database
-    :param image_id: Identify the image to be updated
-    :param body: ImageAddTagModel: Pass the tags to be added
+    :param image_id: Identify the image to which the tags are added
+    :param body: ImageAddTagModel: Get the tags from the request body
     :param user: User: Check if the user is an admin or not
     :return: The image object with the updated tags
     """
+    tags = await images_service_normalize_tags(body)
 
-    set_tags = set(body.tags)
-    tags = set_tags
-    if len(tags) > 5:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail='No more than 5 tags are allowed'
-        )
-
+    detail = ""
+    num_tags = 0
+    image_tags = []
     for tag in tags:
-        if len(tag) > 25:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail='Tag length should not exceed 25 characters'
-            )
-        if not db.query(Tag).filter(Tag.name == tag).first():
-            tag = Tag(name=tag)
-            db.add(tag)
-            db.commit()
-            db.refresh(tag)
+        if tag:
+            if len(tag) > 25:
+                tag = tag[0:25]
+            if not db.query(Tag).filter(Tag.name == tag).first():
+                db_tag = Tag(name=tag)
+                db.add(db_tag)
+                db.commit()
+                db.refresh(db_tag)
+            if num_tags < 5:
+                image_tags.append(tag)
+            num_tags += 1
 
-    tags = db.query(Tag).filter(Tag.name.in_(tags)).all()
+    if num_tags >= 5:
+        detail = "But be attentive you can add only five tags to an image"
+
+    tags = db.query(Tag).filter(Tag.name.in_(image_tags)).all()
 
     if user.role == Role.admin:
         image = db.query(Image).filter(Image.id == image_id).first()
@@ -198,7 +200,7 @@ async def add_tag(db: Session, image_id, body: ImageAddTagModel, user: User):
         image.tags = tags
         db.commit()
         db.refresh(image)
-        return image
+        return image, detail
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
 

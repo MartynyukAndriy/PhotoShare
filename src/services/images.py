@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 
 from src.database.models import Image
+from src.schemas.image_schemas import ImageAddModel
 
 
 async def images_service_change_name(public_name, db):
@@ -24,25 +25,26 @@ async def images_service_change_name(public_name, db):
     return correct_public_name
 
 
-async def normalize_tags(body):
+async def images_service_normalize_tags(body):
     """
-    The normalize_tags function takes a list of tags and returns a new list.
+    The normalize_tags function takes a list of tags and returns a list of unique, non-empty tags.
+        Args:
+            body (list): A list of strings representing the tags to be normalized.
 
-    :param body: Get the request body
+    :param body: Get the tags from the request body
     :return: A list of tags
-
     """
-    correct_tags = set()
+    correct_tags = []
+    tags = []
+    tags_set = set()
     for tag_str in body.tags:
-        tags = tag_str.split(",")
+        tags.extend(tag_str.split(","))
+    tags = [tag.strip() for tag in tags]
+    for tag in tags:
+        if tag:
+            tags_set.add(tag)
+    if tags_set:
         for tag in tags:
-            if tag:
-                correct_tags.add(tag)
-
-    correct_tags = list(correct_tags)
-    if len(correct_tags) > 5:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail='Maximum of 5 tags allowed'
-        )
+            if tag in tags_set and tag not in correct_tags:
+                correct_tags.append(tag)
     return correct_tags

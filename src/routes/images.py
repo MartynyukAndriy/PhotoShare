@@ -13,7 +13,7 @@ from src.schemas.image_schemas import ImageAddResponse, ImageUpdateModel, ImageA
     ImageAdminGetAllResponse
 from src.repository import images
 from src.services.auth import auth_service
-from src.services.images import images_service_change_name, normalize_tags
+from src.services.images import images_service_change_name, images_service_normalize_tags
 from src.services.roles import RolesAccess
 
 load_dotenv()
@@ -102,7 +102,7 @@ async def upload_image(body: ImageAddModel = Depends(), file: UploadFile = File(
             secure=True
         )
 
-    correct_tags = await normalize_tags(body)
+    correct_tags = await images_service_normalize_tags(body)
 
     public_name = file.filename.split(".")[0]
 
@@ -113,9 +113,9 @@ async def upload_image(body: ImageAddModel = Depends(), file: UploadFile = File(
     src_url = cloudinary.CloudinaryImage(f'PhotoShare/{file_name}') \
         .build_url(width=250, height=250, crop='fill', version=r.get('version'))
 
-    image = await images.add_image(db, body, correct_tags, src_url, correct_public_name, current_user)
+    image, details = await images.add_image(db, body, correct_tags, src_url, correct_public_name, current_user)
 
-    return {"image": image, "detail": "Image was successfully added"}
+    return {"image": image, "detail": "Image was successfully added." + details}
 
 
 @router.put("/update_description/{image_id}", response_model=ImageUpdateDescrResponse,
@@ -154,8 +154,8 @@ async def add_tag(image_id, body: ImageAddTagModel = Depends(), db: Session = De
     :return: A dictionary with the image id, tags and a detail message
     """
 
-    image = await images.add_tag(db, image_id, body, current_user)
-    return {"id": image.id, "tags": image.tags, "detail": "Image was successfully updated"}
+    image, details = await images.add_tag(db, image_id, body, current_user)
+    return {"id": image.id, "tags": image.tags, "detail": "Image was successfully updated." + details}
 
 
 @router.delete("/{id}", response_model=ImageDeleteResponse, dependencies=[Depends(access_all)])
