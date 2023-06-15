@@ -22,11 +22,6 @@ async def create_transformed_picture(body: TransformedImageModel,
     file_name = public_id + "_" + str(current_user.username)
     new_url = cloudinary.CloudinaryImage(f'PhotoShare/{file_name}').build_url(transformation=transformations)
 
-    # # check is there such transformed image in the database already
-    # transformed_list = db.query(TransformedImage).filter(TransformedImage.image_id == image_id).all()
-    # if any([image.transform_image_url == new_url for image in transformed_list]):
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This transformed images is already exists")
-
     new_transformed_image = TransformedImage(transform_image_url=new_url, image_id=original_image.id)
     db.add(new_transformed_image)
     db.commit()

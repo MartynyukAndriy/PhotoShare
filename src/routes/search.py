@@ -19,9 +19,9 @@ router = APIRouter(prefix="/search", tags=["Search and filter"])
 
 @router.get("/", response_model=List[TransformedImageResponse], dependencies=[Depends(access_get)])
 async def search_images_by_tag(skip: int = 0, limit: int = 10,
-                               search: str | None = None,
+                               search_tag: str = "",
                                filter_type: int = 1,
                                db: Session = Depends(get_db),
                                user: User = Depends(auth_service.get_current_user)):
-    images = await find_image_by_tag(skip, limit, search, filter_type, db, user)
+    images = await find_image_by_tag(skip, limit, search_tag, filter_type, db, user)
     return images
