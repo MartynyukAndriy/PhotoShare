@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from fastapi import HTTPException, status
 
 from src.database.models import Image
@@ -27,24 +29,15 @@ async def images_service_change_name(public_name, db):
 
 async def images_service_normalize_tags(body):
     """
-    The normalize_tags function takes a list of tags and returns a list of unique, non-empty tags.
+    The images_service_normalize_tags function takes a list of tags and returns a list of unique, normalized tags.
         Args:
-            body (list): A list of strings representing the tags to be normalized.
+            body (list): A list of strings representing the image's tags.
 
     :param body: Get the tags from the request body
-    :return: A list of tags
+    :return: A list of tags with no duplicates
+    :doc-author: Trelent
     """
-    correct_tags = []
-    tags = []
-    tags_set = set()
-    for tag_str in body.tags:
-        tags.extend(tag_str.split(","))
-    tags = [tag.strip() for tag in tags]
-    for tag in tags:
-        if tag:
-            tags_set.add(tag)
-    if tags_set:
-        for tag in tags:
-            if tag in tags_set and tag not in correct_tags:
-                correct_tags.append(tag)
+
+    tags = [tag.strip() for tag_str in body.tags for tag in tag_str.split(",") if tag]
+    correct_tags = list(OrderedDict.fromkeys(tags))
     return correct_tags
