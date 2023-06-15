@@ -55,6 +55,8 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.email_not_confirmed)
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.invalid_password)
+    if user.banned:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=AuthMessages.banned)
     # Generate JWT
     access_token = await auth_service.create_access_token(data={"sub": user.email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
@@ -79,6 +81,8 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
     if user.refresh_token != token:
         await repository_users.update_token(user, None, db)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.invalid_refresh_token)
+    if user.banned:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=AuthMessages.banned)
 
     access_token = await auth_service.create_access_token(data={"sub": email})
     refresh_token = await auth_service.create_refresh_token(data={"sub": email})

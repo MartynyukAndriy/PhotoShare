@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from src.database.models import User
-from src.schemas.user_schemas import UserModel, UserUpdate
+from src.schemas.user_schemas import UserModel, UserUpdate, UserBlackList
 
 
 async def get_user_by_email(email: str, db: Session) -> User | None:
@@ -98,4 +98,13 @@ async def update_user_info(body: UserUpdate, username: str, db: Session):
     user.username = body.username
     user.email = body.email
     db.commit()
+    return user
+
+
+async def block(email: str, body: UserBlackList, db: Session):
+    """Description"""
+    user = await get_user_by_email(email, db)
+    if user:
+        user.banned = body.banned
+        db.commit()
     return user
