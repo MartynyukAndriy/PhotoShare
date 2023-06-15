@@ -130,3 +130,7 @@ class TestTransformedImageRepository(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(HTTPException) as context:
             await get_transformed_img_by_user_id(1, self.mock_db, self.mock_current_user)
         self.assertEqual(context.exception.status_code, status.HTTP_404_NOT_FOUND)
+
+
+if __name__ == '__main__':
+    unittest.main()
