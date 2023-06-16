@@ -10,6 +10,7 @@ class AuthMessages:
     invalid_scope_for_token = "Invalid scope for token"
     could_not_validate_credentials = "Could not validate credentials"
     invalid_token_for_email_verification = "Invalid token for email verification"
+    banned = "You are banned from this app!"
 
 
 class RolesMessages:
