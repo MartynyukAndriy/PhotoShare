@@ -4,8 +4,8 @@ from starlette import status
 
 from src.database.db import get_db
 from src.database.models import User, Role
-from src.repository.users import get_user_info, update_user_info
-from src.schemas.user_schemas import UserResponse, UserUpdate
+from src.repository.users import get_user_info, update_user_info, block
+from src.schemas.user_schemas import UserResponse, UserUpdate, UserBlackList, UserBlacklistResponse
 from src.services.auth import auth_service
 from src.services.roles import RolesAccess
 
@@ -13,8 +13,9 @@ access_get = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_create = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_update = RolesAccess([Role.admin, Role.moderator, Role.user])
 access_delete = RolesAccess([Role.admin])
+access_block = RolesAccess([Role.admin])
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["Users profile"])
 
 
 @router.get("/me/", response_model=UserResponse)
@@ -65,3 +66,13 @@ async def profile_update(username: str, body: UserUpdate, db: Session = Depends(
     updated_user = await update_user_info(body, username, db)
 
     return updated_user
+
+
+@router.patch("/{email}/blacklist", response_model=UserBlacklistResponse, dependencies=[Depends(access_block)])
+async def block_user(email: str, body: UserBlackList, db: Session = Depends(get_db),
+                        _: User = Depends(auth_service.get_current_user)):
+    """Description"""
+    blocked_user = await block(email, body, db)
+    if blocked_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return blocked_user
