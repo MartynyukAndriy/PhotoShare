@@ -94,7 +94,7 @@ async def delete_transformed_image_by_id(transformed_id: int, db: Session, user)
     """
     if user.role == Role.admin:
         transformed_image = db.query(TransformedImage).join(Image). \
-            filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
+            filter(TransformedImage.id == transformed_id and Image.user_id == user.id).first()
         if not transformed_image:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
         db.delete(transformed_image)
