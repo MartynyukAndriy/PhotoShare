@@ -13,7 +13,7 @@ from src.repository.transformed_images import get_all_transformed_images, delete
     get_transformed_img_by_user_id, get_url_transformed_image_by_id
 from src.services.auth import auth_service
 
-router = APIRouter(prefix="/transformed_images", tags=["Transformed images"])
+router = APIRouter(prefix="/transformed_images", tags=["transformed images"])
 
 
 @router.post("/{image_id}", response_model=TransformedImageResponse,

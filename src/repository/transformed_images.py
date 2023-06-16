@@ -2,7 +2,7 @@ import cloudinary
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.database.models import TransformedImage, Image, User
+from src.database.models import TransformedImage, Image, User, Role
 from src.database.db import get_db
 from src.schemas.transformed_image_schemas import TransformedImageModel
 from src.services.transformed_image import create_qrcode, create_transformations
@@ -80,7 +80,7 @@ async def get_transformed_img_by_id(transformed_id: int, db: Session, current_us
     return transformed_image
 
 
-async def delete_transformed_image_by_id(transformed_id: int, db: Session, current_user):
+async def delete_transformed_image_by_id(transformed_id: int, db: Session, user):
     """
     The delete_transformed_image_by_id function deletes a transformed image from the database.
         It takes in an integer representing the id of the transformed image to be deleted, and a Session object for
@@ -89,16 +89,19 @@ async def delete_transformed_image_by_id(transformed_id: int, db: Session, curre
 
     :param transformed_id: int: Identify the transformed image to be deleted
     :param db: Session: Access the database
-    :param current_user: Check if the user is authorized to delete the image
+    :param user: Check if the user is authorized to delete the image
     :return: The deleted transformed image
     """
-    transformed_image = db.query(TransformedImage).join(Image). \
-        filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
-    if not transformed_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
-    db.delete(transformed_image)
-    db.commit()
-    return transformed_image
+    if user.role == Role.admin:
+        transformed_image = db.query(TransformedImage).join(Image). \
+            filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
+        if not transformed_image:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
+        db.delete(transformed_image)
+        db.commit()
+        return transformed_image
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the admin can delete this data")
 
 
 async def get_qrcode_transformed_image_by_id(transformed_id: int, db: Session, current_user):
