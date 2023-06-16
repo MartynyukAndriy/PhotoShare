@@ -23,8 +23,8 @@ class RatingResponse(RatingModel):
         orm_mode = True
 
 
-class AverageRatingResponse(RatingModel):
-    avarage_rating: float = 0.0
+class AverageRatingResponse(BaseModel):
+    average_rating: float = 0.0
  
     class Config:
         orm_mode = True

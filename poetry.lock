@@ -496,8 +496,6 @@ files = [
     {file = "fastapi_mail-1.2.8-py3-none-any.whl", hash = "sha256:1ea39d0b26943cb6e94d2b512cfc1295cfc5133df8d913c7db8da0f835802706"},
     {file = "fastapi_mail-1.2.8.tar.gz", hash = "sha256:5c650ffa92ca6922f700b4001a201f52e25999aafbf3c4d0f9150126aebe2df0"},
 ]
-
-[package.dependencies]
 aiosmtplib = ">=2.0,<3.0"
 blinker = ">=1.5,<2.0"
 email-validator = ">=1.1,<2.0"
