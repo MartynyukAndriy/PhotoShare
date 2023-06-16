@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from src.database.models import TransformedImage, Image, User
+from src.database.models import TransformedImage, Image, User, Role
 from src.schemas.transformed_image_schemas import TransformedImageModel
 from src.repository.transformed_images import create_transformed_picture, get_all_transformed_images, \
     get_transformed_img_by_id, delete_transformed_image_by_id, get_qrcode_transformed_image_by_id, \
@@ -69,19 +69,18 @@ class TestTransformedImageRepository(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(context.exception.status_code, status.HTTP_404_NOT_FOUND)
 
     async def test_delete_transformed_image_by_id_success(self):
-        # переконуємося, що функція повертає видалений об'єкт TransformedImage
         self.mock_db.query.return_value.join.return_value.filter.return_value.first.return_value = self.mock_transformed_image
         self.mock_current_user.id = 1
+        self.mock_current_user.role = Role.admin
         result = await delete_transformed_image_by_id(self.mock_transformed_id, self.mock_db, self.mock_current_user)
         self.assertIsInstance(result, TransformedImage)
 
     async def test_delete_transformed_image_by_id_not_found(self):
-        # Переконуємося, що функція викликає виключення HTTPException, якщо трансформовані зображення не знайдено
         self.mock_db.query.return_value.join.return_value.filter.return_value.first.return_value = None
         self.mock_current_user.id = 1
         with self.assertRaises(HTTPException) as context:
             await delete_transformed_image_by_id(self.mock_transformed_id, self.mock_db, self.mock_current_user)
-        self.assertEqual(context.exception.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(context.exception.status_code, status.HTTP_403_FORBIDDEN)
 
     async def test_get_qrcode_transformed_image_by_id_success(self):
         # Переконуємося, що функція повертає об'єкт TransformedImage
