@@ -8,7 +8,6 @@ Base = declarative_base()
 
 
 class Comment(Base):
-
     __tablename__ = 'comments'
 
     id = Column(Integer, primary_key=True, index=True)
@@ -20,19 +19,6 @@ class Comment(Base):
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
-
-class Image(Base):
-    __tablename__ = "images"
-
-    id = Column(Integer, primary_key=True, index=True)
-    url = Column(String(300), unique=True, index=True)
-    description = Column(String(500), nullable=True)
-    public_name = Column(String(), unique=True)
-    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
-    user = relationship('User', backref="images")
-    created_at = Column('created_at', DateTime, default=func.now())
-    updated_at = Column('updated_at', DateTime, default=func.now(), onupdate=func.now())
 
 
 image_m2m_tag = Table(
@@ -81,7 +67,6 @@ class User(Base):
 
 
 class Rating(Base):
-
     __tablename__ = 'ratings'
     id = Column(Integer, primary_key=True)
     one_star = Column(Boolean, default=False)
@@ -93,3 +78,17 @@ class Rating(Base):
     user = relationship('User', backref="ratings")
     image_id = Column('image_id', ForeignKey('images.id', ondelete='CASCADE'), default=None)
     image = relationship('Image', backref="ratings")
+
+
+class Image(Base):
+    __tablename__ = "images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String(300), unique=True, index=True)
+    description = Column(String(500), nullable=True)
+    public_name = Column(String(), unique=True)
+    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    user = relationship('User', backref="images")
+    tags = relationship("Tag", secondary=image_m2m_tag, backref="images")
+    created_at = Column('created_at', DateTime, default=func.now())
+    updated_at = Column('updated_at', DateTime, default=func.now(), onupdate=func.now())

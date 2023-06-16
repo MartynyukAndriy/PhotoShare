@@ -85,6 +85,7 @@ async def remove_tag(tag_id: int, db: Session) -> Tag | None:
         db.commit()
     return tag
 
+
 async def remove_tag(tag_id: int, db: Session) -> Tag | None:
     """
     The remove_tag function removes a tag from the database.
