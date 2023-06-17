@@ -36,7 +36,3 @@ class TestCreateTransformations(unittest.TestCase):
             {'angle': 90},
         ]
         self.assertEqual(transformations, expected_transformations)
-
-
-if __name__ == "__main__":
-    unittest.main()

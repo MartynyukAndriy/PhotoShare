@@ -139,20 +139,3 @@ async def get_url_transformed_image_by_id(transformed_id: int, db: Session, curr
     if not transformed_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
     return transformed_image
-
-
-async def get_transformed_img_by_user_id(user_id: int, db: Session, current_user):
-    """
-    The get_transformed_img_by_user_id function returns a list of transformed images for the user with the given id.
-        If no transformed image is found, an HTTP 404 error is raised.
-
-    :param user_id: int: Filter the transformed images by user id
-    :param db: Session: Pass the database session to the function
-    :param current_user: Check if the user is logged in
-    :return: A list of transformed images
-    """
-    transformed_images = db.query(TransformedImage).join(Image). \
-        filter(Image.user_id == user_id and Image.user_id == current_user.id).all()
-    if not transformed_images:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
-    return transformed_images

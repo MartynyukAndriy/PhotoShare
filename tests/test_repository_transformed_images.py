@@ -6,7 +6,7 @@ from src.database.models import TransformedImage, Image, User, Role
 from src.schemas.transformed_image_schemas import TransformedImageModel
 from src.repository.transformed_images import create_transformed_picture, get_all_transformed_images, \
     get_transformed_img_by_id, delete_transformed_image_by_id, get_qrcode_transformed_image_by_id, \
-    get_url_transformed_image_by_id, get_transformed_img_by_user_id
+    get_url_transformed_image_by_id
 
 
 class TestTransformedImageRepository(unittest.IsolatedAsyncioTestCase):
@@ -112,24 +112,3 @@ class TestTransformedImageRepository(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(HTTPException) as context:
             await get_url_transformed_image_by_id(self.mock_transformed_id, self.mock_db, self.mock_current_user)
         self.assertEqual(context.exception.status_code, status.HTTP_404_NOT_FOUND)
-
-    async def test_get_transformed_img_by_user_id_success(self):
-        # переконуємося, що функція повертає список TransformedImage
-        self.mock_db.query.return_value.join.return_value.filter.return_value.all.return_value = [
-            self.mock_transformed_image]
-        self.mock_current_user.id = 1
-        result = await get_transformed_img_by_user_id(1, self.mock_db, self.mock_current_user)
-        self.assertIsInstance(result, list)
-        self.assertIsInstance(result[0], TransformedImage)
-
-    async def test_get_transformed_img_by_user_id_not_found(self):
-        # переконуємося, що функція викликає виключення HTTPException, якщо трансформовані зображення не знайдено
-        self.mock_db.query.return_value.join.return_value.filter.return_value.all.return_value = []
-        self.mock_current_user.id = 1
-        with self.assertRaises(HTTPException) as context:
-            await get_transformed_img_by_user_id(1, self.mock_db, self.mock_current_user)
-        self.assertEqual(context.exception.status_code, status.HTTP_404_NOT_FOUND)
-
-
-if __name__ == '__main__':
-    unittest.main()
