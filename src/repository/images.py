@@ -107,13 +107,13 @@ async def add_image(db: Session, image: ImageAddModel, tags: list[str], url: str
     for tag in tags:
         if len(tag) > 25:
             tag = tag[0:25]
-        if not db.query(Tag).filter(Tag.name == tag).first():
-            db_tag = Tag(name=tag)
+        if not db.query(Tag).filter(Tag.name == tag.lower()).first():
+            db_tag = Tag(name=tag.lower())
             db.add(db_tag)
             db.commit()
             db.refresh(db_tag)
         if num_tags < 5:
-            image_tags.append(tag)
+            image_tags.append(tag.lower())
         num_tags += 1
 
     if num_tags >= 5:
@@ -176,13 +176,13 @@ async def add_tag(db: Session, image_id, body: ImageAddTagModel, user: User):
         if tag:
             if len(tag) > 25:
                 tag = tag[0:25]
-            if not db.query(Tag).filter(Tag.name == tag).first():
-                db_tag = Tag(name=tag)
+            if not db.query(Tag).filter(Tag.name == tag.lower()).first():
+                db_tag = Tag(name=tag.lower())
                 db.add(db_tag)
                 db.commit()
                 db.refresh(db_tag)
             if num_tags < 5:
-                image_tags.append(tag)
+                image_tags.append(tag.lower())
             num_tags += 1
 
     if num_tags >= 5:

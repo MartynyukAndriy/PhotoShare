@@ -63,6 +63,9 @@ async def create_tag(body: TagModel, db: Session = Depends(get_db), _: User = De
     :param _: User: Get the current user
     :return: A tagmodel object
     """
+    check_tag = await repository_tags.get_tag_by_name(body.name.lower(), db)
+    if check_tag:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Such tag already exist')
     tag = await repository_tags.create_tag(body, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=AuthMessages.verification_error)
@@ -81,6 +84,9 @@ async def update_tag(body: TagModel, tag_id: int, db: Session = Depends(get_db),
     :param _: User: Get the current user from the auth_service
     :return: A tagmodel object
     """
+    check_tag = await repository_tags.get_tag_by_name(body.name.lower(), db)
+    if check_tag:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Such tag already exist')
     tag = await repository_tags.update_tag(tag_id, body, db)
     if tag is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

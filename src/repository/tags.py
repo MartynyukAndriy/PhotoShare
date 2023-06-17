@@ -41,7 +41,7 @@ async def create_tag(body: TagModel, db: Session) -> Tag:
     :param db: Session: Pass the database session to the function
     :return: A tag
     """
-    tag = Tag(name=body.name)
+    tag = Tag(name=body.name.lower())
     db.add(tag)
     db.commit()
     db.refresh(tag)
@@ -65,7 +65,7 @@ async def update_tag(tag_id: int, body: TagModel, db: Session) -> Tag | None:
     """
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if tag:
-        tag.name = body.name
+        tag.name = body.name.lower()
         db.commit()
     return tag
 
@@ -99,4 +99,9 @@ async def remove_tag(tag_id: int, db: Session) -> Tag | None:
     if tag:
         db.delete(tag)
         db.commit()
+    return tag
+
+
+async def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
+    tag = db.query(Tag).filter(Tag.name == tag_name.lower()).first()
     return tag
