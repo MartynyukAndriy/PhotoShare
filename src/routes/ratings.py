@@ -20,7 +20,7 @@ access_update = RolesAccess([Role.admin, Role.moderator])
 access_delete = RolesAccess([Role.admin, Role.moderator])
 
 
-@router.get("/image/{image_id}", response_model=AverageRatingResponse, dependencies=[Depends(access_get)])
+@router.get("/image/{image_id}", response_model=float, dependencies=[Depends(access_get)])
 async def common_image_rating(image_id, _: User = Depends(auth_service.get_current_user),
                               db: Session = Depends(get_db)):
     """
