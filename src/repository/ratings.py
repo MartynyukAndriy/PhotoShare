@@ -3,7 +3,6 @@ from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-
 from src.database.models import Rating, User, Image
 from src.schemas.rating_schemas import RatingModel
 
@@ -52,6 +51,7 @@ async def get_rating(rating_id: int, db: Session) -> Rating:
     """
     return db.query(Rating).filter(Rating.id == rating_id).first()
 
+
 def get_image(db: Session, image_id: int):
     """
     The get_image function returns an image object from the database.
@@ -89,12 +89,13 @@ async def create_rating(image_id: int, body: RatingModel, user: User, db: Sessio
     for el in body:
         if el[1]:
             sum_of_rates += 1
-    if sum_of_rates > 1:
+    if sum_of_rates != 1:
         return None
     rating_in_database = db.query(Rating).filter(Rating.image_id == image_id, Rating.user_id == user.id).first()
     if rating_in_database:
         return rating_in_database
-    rating = Rating(one_star=body.one_star, two_stars=body.two_stars, three_stars=body.three_stars, four_stars=body.four_stars, five_stars=body.five_stars, user_id=user.id, image_id=image_id)
+    rating = Rating(one_star=body.one_star, two_stars=body.two_stars, three_stars=body.three_stars,
+                    four_stars=body.four_stars, five_stars=body.five_stars, user_id=user.id, image_id=image_id)
     db.add(rating)
     db.commit()
     db.refresh(rating)
