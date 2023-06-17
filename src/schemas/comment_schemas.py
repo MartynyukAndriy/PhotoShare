@@ -14,7 +14,7 @@ class CommentResponse(BaseModel):
     id: int = 1
     comment: str = 'My comment'
     user: UserResponse
-    # image: ImageAddResponse
+    image_id: int = 1
 
     class Config:
         orm_mode = True
