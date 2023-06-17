@@ -6,6 +6,7 @@ class TagModel(BaseModel):
 
 
 class TagResponse(TagModel):
+    id: int = 1
     name: str
 
     class Config:
