@@ -60,5 +60,5 @@ async def search_images_by_tag(skip: int = 0, limit: int = 10,
     :param user: User: Get the current user
     :return: A list of image objects
     """
-    images = find_image_by_tag(skip, limit, search_tag, filter_type, db, user)
+    images = await find_image_by_tag(skip, limit, search_tag, filter_type, db, user)
     return images

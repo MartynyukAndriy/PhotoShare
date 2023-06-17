@@ -1,5 +1,6 @@
 import cloudinary
 from fastapi import Depends, HTTPException, status
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from src.database.models import TransformedImage, Image, User, Role
@@ -25,7 +26,7 @@ async def create_transformed_picture(body: TransformedImageModel,
     :param db: Session: Get the database session
     :return: A TransformedImageModel object
     """
-    original_image = db.query(Image).filter(Image.id == image_id and Image.user_id == current_user.id).first()
+    original_image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == current_user.id)).first()
     if not original_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Original image not found")
 
@@ -56,10 +57,10 @@ async def get_all_transformed_images(skip: int, limit: int, image_id: int, db: S
     :return: A list of all transformed images for a given image
     """
     transformed_list = db.query(TransformedImage).join(Image). \
-        filter(TransformedImage.image_id == image_id and Image.user_id == current_user.id). \
+        filter(and_(TransformedImage.image_id == image_id, Image.user_id == current_user.id)). \
         offset(skip).limit(limit).all()
     if not transformed_list:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed images for this image not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed images for this image not found or user is not owner of this image")
     return transformed_list
 
 
@@ -74,9 +75,9 @@ async def get_transformed_img_by_id(transformed_id: int, db: Session, current_us
     :return: A transformed image by its id
     """
     transformed_image = db.query(TransformedImage).join(Image). \
-        filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
+        filter(and_(TransformedImage.id == transformed_id, Image.user_id == current_user.id)).first()
     if not transformed_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found or user is not owner of this image")
     return transformed_image
 
 
@@ -94,7 +95,7 @@ async def delete_transformed_image_by_id(transformed_id: int, db: Session, user)
     """
     if user.role == Role.admin:
         transformed_image = db.query(TransformedImage).join(Image). \
-            filter(TransformedImage.id == transformed_id and Image.user_id == user.id).first()
+            filter(TransformedImage.id == transformed_id).first()
         if not transformed_image:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
         db.delete(transformed_image)
@@ -115,9 +116,9 @@ async def get_qrcode_transformed_image_by_id(transformed_id: int, db: Session, c
     :return: The transformed image by id
     """
     transformed_image = db.query(TransformedImage).join(Image). \
-        filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
+        filter(and_(TransformedImage.id == transformed_id, Image.user_id == current_user.id)).first()
     if not transformed_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found or user is not owner of this image")
     url_to_qrcode = transformed_image.transform_image_url
     create_qrcode(url_to_qrcode)
     return transformed_image
@@ -135,8 +136,8 @@ async def get_url_transformed_image_by_id(transformed_id: int, db: Session, curr
     :return: The transformed image url
     """
     transformed_image = db.query(TransformedImage).join(Image). \
-        filter(TransformedImage.id == transformed_id and Image.user_id == current_user.id).first()
+        filter(and_(TransformedImage.id == transformed_id, Image.user_id == current_user.id)).first()
     if not transformed_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found or user is not owner of this image")
     return transformed_image
 
