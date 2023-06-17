@@ -10,7 +10,7 @@ from src.schemas.transformed_image_schemas import TransformedImageModel, Transfo
     UrlTransformedImageResponse
 from src.repository.transformed_images import get_all_transformed_images, delete_transformed_image_by_id, \
     create_transformed_picture, get_qrcode_transformed_image_by_id, get_transformed_img_by_id, \
-    get_transformed_img_by_user_id, get_url_transformed_image_by_id
+    get_url_transformed_image_by_id
 from src.services.auth import auth_service
 
 router = APIRouter(prefix="/transformed_images", tags=["transformed images"])
@@ -138,22 +138,3 @@ async def delete_transformed_image(transformed_image_id: int = Path(ge=1),
     transformed_image = await delete_transformed_image_by_id(transformed_image_id, db, user)
     return None
 
-
-@router.get("/user/transformed/{user_id}", response_model=list[TransformedImageResponse],
-            dependencies=[Depends(access_get)])
-async def get_transformed_images_by_user_id(user_id: int = Path(ge=1),
-                                            db: Session = Depends(get_db),
-                                            current_user: User = Depends(auth_service.get_current_user)):
-    """
-    The get_transformed_images_by_user_id function returns a list of transformed images for the user with the given id.
-        The function takes in an integer representing a user's id, and two optional parameters: db and current_user.
-        If no database is provided, then it will use the default database connection from get_db().  If no current_user is
-        provided, then it will use auth_service to retrieve one.
-
-    :param user_id: int: Specify the user_id of the user whose transformed images are to be retrieved
-    :param db: Session: Get the database session
-    :param current_user: User: Ensure that the user is authenticated
-    :return: A list of transformed images
-    """
-    transformed_images = await get_transformed_img_by_user_id(user_id, db, current_user)
-    return transformed_images

@@ -5,8 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from src.routes.transformed_images import create_new_transformed_image, \
     get_all_transformed_images_for_original_image_by_id, get_transformed_images_by_image_id, \
-    get_qrcode_for_transformed_image, get_url_for_transformed_image, delete_transformed_image, \
-    get_transformed_images_by_user_id
+    get_qrcode_for_transformed_image, get_url_for_transformed_image, delete_transformed_image
 from src.schemas.transformed_image_schemas import TransformedImageModel
 
 
@@ -69,12 +68,4 @@ class TransformedImagesRouterTestCase(unittest.TestCase):
         with patch("src.routes.transformed_images.delete_transformed_image_by_id", delete_transformed_image_by_id):
             result = asyncio.run(delete_transformed_image(self.mock_transformed_image_id, self.mock_db, self.mock_user))
         self.assertIsNone(result)
-
-    def test_get_transformed_images_by_user_id_success(self):
-        # Переконуємося, що функція повертає список трансформованих зображень для даного користувача (по id)
-        user_id = 1
-        get_transformed_img_by_user_id = AsyncMock(return_value=[self.mock_transformed_image])
-        with patch("src.routes.transformed_images.get_transformed_img_by_user_id", get_transformed_img_by_user_id):
-            result = asyncio.run(get_transformed_images_by_user_id(user_id, self.mock_db, self.mock_user))
-        self.assertEqual(result, [self.mock_transformed_image])
 

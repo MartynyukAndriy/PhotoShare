@@ -37,6 +37,3 @@ class TestCreateTransformations(unittest.TestCase):
         ]
         self.assertEqual(transformations, expected_transformations)
 
-
-if __name__ == "__main__":
-    unittest.main()
