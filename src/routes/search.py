@@ -17,19 +17,25 @@ router = APIRouter(prefix="/search", tags=["search and filter"])
 @router.get("/image/{user_id}", response_model=list[ImageDb],
             dependencies=[Depends(access_get)])
 async def get_image_by_user_id(user_id: int = Path(ge=1),
+                               skip: int = 0, limit: int = 10,
+                               filter_type: str = 'd',
                                db: Session = Depends(get_db),
                                current_user: User = Depends(auth_service.get_current_user)):
     """
     The get_image_by_user_id function returns a list of images that are associated with the user_id.
-        The function takes in an integer value for the user_id, and it also depends on a database session object
-        and current_user object.  The function returns a list of image objects.
+        The function takes in an optional skip and limit parameter to control pagination, as well as an optional filter_type
+        parameter to control whether or not the returned images should be filtered by date (d) or (-d).
+        If no filter type is specified, then it defaults to filtering by date.
 
-    :param user_id: int: Get the user_id from the path
-    :param db: Session: Access the database
-    :param current_user: User: Get the current user's id
-    :return: A list of images for the user with the specified id
+    :param user_id: int: Get the images of a specific user
+    :param skip: int: Skip a certain amount of images
+    :param limit: int: Limit the number of images returned
+    :param filter_type: str: Filter the images by date, likes or comments
+    :param db: Session: Get the database session
+    :param current_user: User: Get the current user
+    :return: A list of images that the user has uploaded
     """
-    images = await get_img_by_user_id(user_id, db, current_user)
+    images = await get_img_by_user_id(user_id, skip, limit, filter_type, db, current_user)
     return images
 
 

@@ -6,24 +6,35 @@ from src.database.models import Image, User, Tag, Rating, image_m2m_tag, Role
 from src.database.db import get_db
 
 
-async def get_img_by_user_id(user_id: int, db: Session, user):
+async def get_img_by_user_id(user_id, skip, limit, filter_type, db, user):
     """
-    The get_img_by_user_id function returns a list of images for the user with the given id.
-        If no such user exists, it raises an HTTPException with status code 404 and detail &quot;Images for this user not found&quot;.
-        If the requesting user is neither admin nor moderator, it raises an HTTPException with status code 403 and detail &quot;Only admin and moderator can get this data&quot;.
+    The get_img_by_user_id function is used to get all images for a specific user.
+        It takes in the following parameters:
+            - user_id: The id of the user whose images are being requested.
+            - skip: The number of records to skip before returning results (for pagination).  Default value is 0.
+            - limit: The maximum number of records to return (for pagination).  Default value is 10.
 
-    :param user_id: int: Get the images by user id
-    :param db: Session: Access the database
+    :param user_id: Filter the images by user_id
+    :param skip: Skip the first n images
+    :param limit: Limit the number of images returned
+    :param filter_type: Determine whether the images should be returned in ascending or descending order
+    :param db: Make a query to the database
     :param user: Check if the user is an admin or moderator
-    :return: A list of images for a given user
+    :return: A list of images for a specific user
     """
     if user.role in (Role.admin, Role.moderator):
-        images = db.query(Image).filter(Image.user_id == user_id).order_by(Image.id).all()
+        if filter_type == "d":
+            images = db.query(Image).filter(Image.user_id == user_id).order_by(desc(Image.created_at)).offset(skip).limit(limit).all()
+        elif filter_type == "-d":
+            images = db.query(Image).filter(Image.user_id == user_id).order_by(asc(Image.created_at)).offset(skip).limit(limit).all()
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="parameter filter_type must be 'd" or '-d')
         if not images:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Images for this user not found")
         return images
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin and moderator can get this data")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin or moderator can get this data")
 
 
 def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str, db: Session, user: User):
