@@ -65,6 +65,9 @@ async def update_tag(tag_id: int, body: TagModel, db: Session) -> Tag | None:
     """
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if tag:
+        new_tag_name_in_base = db.query(Tag).filter(Tag.name == body.name.lower()).first()
+        if new_tag_name_in_base:
+            return None
         tag.name = body.name.lower()
         db.commit()
     return tag
