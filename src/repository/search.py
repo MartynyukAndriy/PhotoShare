@@ -1,9 +1,39 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
-from typing import Optional
 from src.database.models import Image, User, Tag, Rating, image_m2m_tag, Role
 from src.database.db import get_db
+
+
+def calc_average_rating(image_id, db: Session):
+    """
+    The get_average_rating function takes in an image_id and a database session.
+    It then queries the Rating table for all ratings associated with that image_id.
+    If there are no ratings, it returns 0 as the average rating. If there are ratings,
+    it sums up all of the star values (one star = 1 point, two stars = 2 points etc.)
+    and divides by the number of total votes to get an average rating.
+
+    :param image_id: Find the image in the database
+    :param db: Session: Access the database
+    :return: The average rating of the image with the given id
+    """
+    image_ratings = db.query(Rating).filter(Rating.image_id == image_id).all()
+    if len(image_ratings) == 0:
+        return 0
+    sum_user_rating = 0
+    for element in image_ratings:
+        if element.one_star:
+            sum_user_rating += 1
+        if element.two_stars:
+            sum_user_rating += 2
+        if element.three_stars:
+            sum_user_rating += 3
+        if element.four_stars:
+            sum_user_rating += 4
+        if element.five_stars:
+            sum_user_rating += 5
+    average_user_rating = sum_user_rating / len(image_ratings)
+    return average_user_rating
 
 
 async def get_img_by_user_id(user_id, skip, limit, filter_type, db, user):
@@ -24,9 +54,11 @@ async def get_img_by_user_id(user_id, skip, limit, filter_type, db, user):
     """
     if user.role in (Role.admin, Role.moderator):
         if filter_type == "d":
-            images = db.query(Image).filter(Image.user_id == user_id).order_by(desc(Image.created_at)).offset(skip).limit(limit).all()
+            images = db.query(Image).filter(Image.user_id == user_id).order_by(desc(Image.created_at)).offset(
+                skip).limit(limit).all()
         elif filter_type == "-d":
-            images = db.query(Image).filter(Image.user_id == user_id).order_by(asc(Image.created_at)).offset(skip).limit(limit).all()
+            images = db.query(Image).filter(Image.user_id == user_id).order_by(asc(Image.created_at)).offset(
+                skip).limit(limit).all()
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="parameter filter_type must be 'd" or '-d')
@@ -37,7 +69,7 @@ async def get_img_by_user_id(user_id, skip, limit, filter_type, db, user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin or moderator can get this data")
 
 
-def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str, db: Session, user: User):
+async def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str, db: Session, user: User):
     """
     The find_image_by_tag function takes in a skip, limit, search string and filter_type.
     It then queries the database for images that match the search string and returns them to the user.
@@ -53,22 +85,51 @@ def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str, db: 
     """
     search = search.lower().strip()
     images = []
+
     if filter_type == "d":
         images = db.query(Image) \
             .join(image_m2m_tag) \
-            .join(Tag).filter(Tag.name==search)\
+            .join(Tag).filter(Tag.name == search) \
             .order_by(desc(Image.created_at)) \
             .offset(skip).limit(limit).all()
     elif filter_type == "-d":
         images = db.query(Image) \
             .join(image_m2m_tag) \
-            .join(Tag).filter(Tag.name==search)\
+            .join(Tag).filter(Tag.name == search) \
             .order_by(asc(Image.created_at)) \
             .offset(skip).limit(limit).all()
-        print(images)
+    elif filter_type == "r":
+        images = db.query(Image) \
+            .join(image_m2m_tag) \
+            .join(Tag).join(Rating).filter(Tag.name == search) \
+            .offset(skip).limit(limit).all()
+
+        images_rating_list = list(map(lambda x: (x.id, calc_average_rating(x.id, db)), images))
+        sorted_images_rating_list = sorted(images_rating_list, key=lambda x: x[1], reverse=False)
+        final_images = []
+        for img_rating in sorted_images_rating_list:
+            for image in images:
+                if img_rating[0] == image.id:
+                    final_images.append(image)
+        images = final_images
+    elif filter_type == "-r":
+        images = db.query(Image) \
+            .join(image_m2m_tag) \
+            .join(Tag).join(Rating).filter(Tag.name == search) \
+            .offset(skip).limit(limit).all()
+        images_rating_list = list(map(lambda x: (x.id, calc_average_rating(x.id, db)), images))
+        sorted_images_rating_list = sorted(images_rating_list, key=lambda x: x[1], reverse=True)
+        print(images_rating_list)
+        print(sorted_images_rating_list)
+        final_images = []
+        for img_rating in sorted_images_rating_list:
+            for image in images:
+                if img_rating[0] == image.id:
+                    final_images.append(image)
+        images = final_images
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="parameter filter_type must be 'd" or '-d')
+                            detail="parameter filter_type must be 'd' / '-d' for sorting by date or 'r' / '-r' for sorting by rating)")
     if not images:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Images not found for this tag")
     return images
