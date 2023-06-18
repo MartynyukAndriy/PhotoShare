@@ -106,7 +106,7 @@ def test_update_tag_not_found(client, token):
         )
         assert response.status_code == 404, response.text
         data = response.json()
-        assert data["detail"] == "Tag not found or you don't have enough rules to update"
+        assert data["detail"] == "Tag not found or exists or you don't have enough rules to update"
 
 
 def test_delete_tag(client, token):
