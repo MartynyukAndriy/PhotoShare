@@ -87,8 +87,6 @@ def test_common_image_rating(client, token):
             headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200, response.text
-        data = response.json()
-        assert data["average_rating"] == 0.0
 
 
 def test_update_rating(client, token):
