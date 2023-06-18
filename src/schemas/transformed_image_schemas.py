@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from pydantic import BaseModel, Field
+from src.schemas.image_schemas import ImageDb
 
 
 class TransformedImageResponse(BaseModel):
@@ -52,3 +53,10 @@ class TransformedImageModel(BaseModel):
     resize: Optional[TransformImageCropModel]
     rotate: Optional[RotateImageModel]
     radius: Optional[RadiusImageModel]
+
+
+class SearchImageResponse(ImageDb):
+    rating: float = Field(ge=0, default=0)
+
+    class Config:
+        orm_mode = True
