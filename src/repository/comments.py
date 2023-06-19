@@ -93,4 +93,5 @@ async def get_image_by_id(image_id: int, db: Session):
     :return: The image with the given id
     """
     image = db.query(Image).filter_by(id=image_id).first()
+    print(image)
     return image

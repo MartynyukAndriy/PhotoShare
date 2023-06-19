@@ -64,46 +64,6 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
-@router.get("/logout", response_model=TokenModel)
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
-    """
-    The refresh_token function is used to refresh the access token.
-        The function takes in a refresh token and returns an access_token, a new refresh_token, and the type of token.
-        If the user's current refresh_token does not match what was passed into this function then it will return an error.
-    :param credentials: HTTPAuthorizationCredentials: Get the token from the request header
-    :param db: Session: Pass the database session to the function
-    :return: A dictionary with the access_token, refresh_token and token type
-    """
-    token = credentials.credentials
-    email = await auth_service.decode_refresh_token(token)
-    user = await repository_users.get_user_by_email(email, db)
-    if user.refresh_token != token:
-        await repository_users.update_token(user, None, db)
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.invalid_refresh_token)
-    if user.banned:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=AuthMessages.banned)
-
-    access_token = await auth_service.create_access_token(data={"sub": email}, expires_delta=60)
-    refresh_token = await auth_service.create_refresh_token(data={"sub": email}, expires_delta=60)
-    await repository_users.update_token(user, refresh_token, db)
-    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
-
-
-# async def logout(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
-#     token = credentials.credentials
-#     print("##################################")
-#     print(token)
-#     print("###################################")
-#     email = await auth_service.decode_refresh_token(token)
-#     user = await repository_users.get_user_by_email(email, db)
-#     if user is None:
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=AuthMessages.invalid_email)
-#     access_token = await auth_service.create_access_token(data={"sub": email}, expires_delta=1)
-#     # refresh_token = await auth_service.create_refresh_token(data={"sub": email}, expires_delta=1)
-#     await repository_users.update_token(user, access_token, db)
-#     return {"access_token": access_token, "refresh_token": token, "token_type": "bearer"}
-
-
 @router.get('/refresh_token', response_model=TokenModel)
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
     """
