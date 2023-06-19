@@ -5,7 +5,7 @@ from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.database.models import User, Role
+from src.database.models import User, Role, Image
 from src.schemas.comment_schemas import CommentResponse, CommentModel, CommentDeleteResponse
 from src.repository import comments as repository_comments
 from src.services.auth import auth_service
@@ -68,8 +68,9 @@ async def create_comment(body: CommentModel, db: Session = Depends(get_db),
     :param current_user: User: Get the user_id of the current user
     :return: The comment object
     """
-    image = repository_comments.get_image_by_id(body.image_id, db)
-    if not image:
+    try:
+        image = db.query(Image).filter_by(id=image_id).first()
+    except:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such image")
     body.user_id = current_user.id
     comment = await repository_comments.create_comment(body, db)
