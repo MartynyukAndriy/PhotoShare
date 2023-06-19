@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from src.database.models import Image, User, Tag, Comment, Role
 from src.repository.ratings import get_average_rating
+from src.routes.images import upload_image
 from src.schemas.image_schemas import ImageUpdateModel, ImageAddModel, ImageAddTagModel
 from src.services.images import images_service_normalize_tags
 from src.routes import images
@@ -33,6 +34,10 @@ class TestImagesRoute(unittest.TestCase):
         # Creating mock tag objects
         self.tag1 = Tag(id=1, name='tag1')
         self.tag2 = Tag(id=2, name='tag2')
+
+        self.current_user = User(id=1, username='testuser')
+        self.body = MagicMock()
+        self.file = UploadFile(filename='test.jpg', file=MagicMock())
 
     async def test_get_image_as_admin(self):
         # Mocking the query and return values
@@ -89,33 +94,27 @@ class TestImagesRoute(unittest.TestCase):
         get_average_rating_mock.assert_called_with(self.image1.id, self.db)
         get_average_rating_mock.assert_called_with(self.image2.id, self.db)
 
-    async def test_add_image(self):
-        # Mocking the query and return values
-        self.db.query.return_value.filter.return_value.first.return_value = None
-        self.db.query.return_value.filter.return_value.all.return_value = [self.tag1, self.tag2]
-        self.db.add.return_value = None
-        self.db.commit.return_value = None
-        self.db.refresh.return_value = None
+    async def test_upload_image(self):
+        normalize_tags_mock = MagicMock(return_value=['tag1', 'tag2', 'tag3'])
+        change_name_mock = MagicMock(return_value='correct_name')
+        images_service_normalize_tags = normalize_tags_mock
+        images_service_change_name = change_name_mock
 
-        # Creating mock input data
-        image_add_model = ImageAddModel(description='Test image', tags=['tag1', 'tag2'])
-        file_data = b"file content"
-        file = UploadFile(filename="test.txt", file=BytesIO(file_data))
-        url = 'https://example.com/image.jpg'
-        public_name = 'test.jpg'
+        expected_image = MagicMock()
 
-        # Calling the function
-        result = await images.upload_image(image_add_model, file, self.db, self.admin_user)
+        images_mock = MagicMock()
+        images_mock.add_image.return_value = (expected_image, 'details')
 
-        # Asserting the expected values
-        self.assertEqual(result[0].description, 'Test image')
-        self.assertEqual(result[0].url, url)
-        self.assertEqual(result[0].public_name, public_name)
-        self.assertEqual(result[1], "")
-        self.db.query.return_value.filter.assert_called_with(Tag.name.in_(['tag1', 'tag2']))
-        self.db.add.assert_called_with(self.image1)
-        self.db.commit.assert_called_once()
-        self.db.refresh.assert_called_with(self.image1)
+        with unittest.mock.patch('app.main.images', images_mock):
+            result = await upload_image(self.body, self.file, self.db, self.current_user)
+
+        self.assertEqual(result['image'], expected_image)
+        self.assertEqual(result['detail'], 'Image was successfully added.details')
+
+        normalize_tags_mock.assert_called_once_with(self.body)
+        change_name_mock.assert_called_once_with('test', self.db)
+        images_mock.add_image.assert_called_once_with(self.db, self.body, ['tag1', 'tag2', 'tag3'],
+                                                      'src_url', 'correct_name', self.current_user)
 
     async def test_update_image_image_not_found(self):
         # Mocking the query and return values

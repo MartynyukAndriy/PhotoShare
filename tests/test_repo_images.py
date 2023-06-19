@@ -17,6 +17,14 @@ class TestImagesService(unittest.TestCase):
         # Create a mock database session for testing
         self.db = MagicMock(spec=Session)
         self.user = User(id=1, role=Role.user)  # Create a mock user
+        self.image = MagicMock()
+        self.tags = ['tag1', 'tag2']
+        self.db_tag = MagicMock()
+        self.url = 'https://test.jpg'
+        self.public_name = 'Test Image'
+        self.user.id = 1
+        self.image_id = 1
+        self.body = MagicMock()
 
     async def test_get_images(self):
         # Mock the behavior of the get_average_rating function
@@ -101,6 +109,60 @@ class TestImagesService(unittest.TestCase):
                                  'Test Image', self.user)
         self.assertEqual(result[0], expected_image)
 
+    async def test_add_image_with_tags_less_than_5(self):
+        num_tags = 0
+        image_tags = []
+        detail = ""
+        for tag in self.tags:
+            if len(tag) > 25:
+                tag = tag[:25]
+            if not self.db.query.return_value.filter.return_value.first.return_value:
+                self.db_tag.name = tag.lower()
+                self.assertEqual(self.db.add.call_count, num_tags)
+                self.assertEqual(self.db.commit.call_count, num_tags)
+                self.assertEqual(self.db.refresh.call_count, num_tags)
+            if num_tags < 5:
+                image_tags.append(tag.lower())
+            num_tags += 1
+
+        if num_tags >= 5:
+            detail = " But be attentive you can add only five tags to an image"
+
+        expected_image = Image(id=1, description='Test Image', user_id=1)
+
+        result = await add_image(self.db, self.image, self.tags, self.url, self.public_name, self.user)
+        self.assertEqual(result[0], expected_image)
+        self.assertEqual(result[1], detail)
+        self.assertEqual(self.db.add.call_count, num_tags)
+        self.assertEqual(self.db.commit.call_count, num_tags)
+        self.assertEqual(self.db.refresh.call_count, 1)
+
+    async def test_add_image_with_tags_greater_than_or_equal_to_5(self):
+        num_tags = 0
+        image_tags = []
+        detail = ""
+        for tag in self.tags:
+            if len(tag) > 25:
+                tag = tag[:25]
+            if not self.db.query.return_value.filter.return_value.first.return_value:
+                self.db_tag.name = tag.lower()
+                self.assertEqual(self.db.add.call_count, num_tags)
+                self.assertEqual(self.db.commit.call_count, num_tags)
+                self.assertEqual(self.db.refresh.call_count, num_tags)
+            if num_tags < 5:
+                image_tags.append(tag.lower())
+            num_tags += 1
+
+        if num_tags >= 5:
+            detail = " But be attentive you can add only five tags to an image"
+        self.assertEqual(detail, " But be attentive you can add only five tags to an image")
+        self.assertEqual(len(image_tags), 5)
+
+    async def test_add_image_with_user_none(self):
+        user = None
+        result = add_image(self.db, self.image, self.tags, self.url, self.public_name, user)
+        self.assertIsNone(result)
+
     async def test_update_image(self):
         # Mock the query method of the database session
         self.db.query.return_value.filter.return_value.first.return_value = Image(id=1, description='Old Description',
@@ -116,22 +178,61 @@ class TestImagesService(unittest.TestCase):
         self.assertEqual(result, expected_image)
 
     async def test_add_tag(self):
-        # Mock the behavior of the images_service_normalize_tags function
-        images_service_normalize_tags = MagicMock()
-        images_service_normalize_tags.return_value = ['tag1', 'tag2']
+        tags_mock = ['tag1', 'tag2', 'tag3']
+        normalize_tags_mock = MagicMock(return_value=tags_mock)
+        images_service_normalize_tags = normalize_tags_mock
 
-        # Mock the query method of the database session
+        self.db.query.return_value.filter.return_value.first.return_value = None
+
+        self.user.role = Role.admin
+
+        expected_tags = [Tag(name=tag.lower()) for tag in tags_mock]
         self.db.query.return_value.filter.return_value.first.return_value = Image(id=1, user_id=1)
 
-        # Mock the add, commit, and refresh methods of the database session
-        self.db.add.return_value = None
-        self.db.commit.return_value = None
-        self.db.refresh.return_value = None
+        expected_image = Image(id=1, user_id=1, updated_at=datetime.utcnow(), tags=expected_tags)
 
-        expected_image = Image(id=1, user_id=1)
+        result = await add_tag(self.db, self.image_id, self.body, self.user)
 
-        result = await add_tag(self.db, 1, ImageAddTagModel(tags=['tag1', 'tag2']), self.user)
         self.assertEqual(result[0], expected_image)
+        self.assertEqual(result[1], "")
+        self.assertEqual(self.db.commit.call_count, 1)
+        self.assertEqual(self.db.refresh.call_count, 1)
+
+        normalize_tags_mock.assert_called_once_with(self.body)
+
+    async def test_add_tag_with_existing_image(self):
+        tags_mock = ['tag1', 'tag2', 'tag3']
+        normalize_tags_mock = MagicMock(return_value=tags_mock)
+        images_service_normalize_tags = normalize_tags_mock
+
+        self.db.query.return_value.filter.return_value.first.return_value = Image(id=1, user_id=1)
+
+        expected_tags = [Tag(name=tag.lower()) for tag in tags_mock]
+
+        expected_image = Image(id=1, user_id=1, updated_at=datetime.utcnow(), tags=expected_tags)
+
+        result = await add_tag(self.db, self.image_id, self.body, self.user)
+
+        self.assertEqual(result[0], expected_image)
+        self.assertEqual(result[1], "")
+        self.assertEqual(self.db.commit.call_count, 1)
+        self.assertEqual(self.db.refresh.call_count, 1)
+
+        normalize_tags_mock.assert_called_once_with(self.body)
+
+    async def test_add_tag_with_user_id_mismatch(self):
+        tags_mock = ['tag1', 'tag2', 'tag3']
+        normalize_tags_mock = MagicMock(return_value=tags_mock)
+        images_service_normalize_tags = normalize_tags_mock
+
+        self.db.query.return_value.filter.return_value.first.return_value = Image(id=1, user_id=2)
+
+        self.user.role = Role.user
+
+        with self.assertRaises(HTTPException):
+            await add_tag(self.db, self.image_id, self.body, self.user)
+
+        normalize_tags_mock.assert_called_once_with(self.body)
 
     async def test_delete_image(self):
         # Mock the query method of the database session
