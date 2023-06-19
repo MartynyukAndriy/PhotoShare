@@ -14,10 +14,10 @@ def root():
     return {"message": "Welcome to FastAPI!"}
 
 
-@app.on_event("startup")
-async def startup():
-    r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
-    await FastAPILimiter.init(r)
+# @app.on_event("startup")
+# async def startup():
+#     r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, password=settings.redis_password, encoding="utf-8", db=0)
+#     await FastAPILimiter.init(r)
 
 
 app.include_router(comments_routes.router, prefix='/api')

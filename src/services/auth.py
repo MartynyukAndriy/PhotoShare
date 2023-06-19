@@ -1,8 +1,8 @@
-import pickle
+# import pickle
 from datetime import datetime, timedelta
 from typing import Optional
 
-import redis
+# import redis
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -13,6 +13,7 @@ from src.conf.config import settings
 from src.conf.messages import AuthMessages
 from src.database.db import get_db
 from src.repository import users as repository_users
+# from main import startup
 
 
 class Auth:
@@ -20,7 +21,7 @@ class Auth:
     SECRET_KEY = settings.jwt_secret_key
     ALGORITHM = settings.jwt_algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    # r = redis.Redis(host=settings.redis_host, port=settings.redis_port, password=settings.redis_password, encoding="utf-8", db=0)
 
     def verify_password(self, plain_password, hashed_password):
         """
@@ -128,15 +129,15 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-        user = self.r.get(f"user:{email}")
-        if user is None:
-            user = await repository_users.get_user_by_email(email, db)
-            if user is None:
-                raise credentials_exception
-            self.r.set(f"user:{email}", pickle.dumps(user))
-            self.r.expire(f"user:{email}", 900)
-        else:
-            user = pickle.loads(user)
+        # user = await startup.get(f"user:{email}")
+        # if user is None:
+        user = await repository_users.get_user_by_email(email, db)
+        #     if user is None:
+        #         raise credentials_exception
+        #     await startup.set(f"user:{email}", pickle.dumps(user))
+        #     await startup.expire(f"user:{email}", 900)
+        # else:
+        #     user = pickle.loads(user)
         return user
 
     def create_email_token(self, data: dict):
