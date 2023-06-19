@@ -68,6 +68,9 @@ async def create_comment(body: CommentModel, db: Session = Depends(get_db),
     :param current_user: User: Get the user_id of the current user
     :return: The comment object
     """
+    image = repository_comments.get_image_by_id(body.image_id, db)
+    if not image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such image")
     body.user_id = current_user.id
     comment = await repository_comments.create_comment(body, db)
     return comment

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.database.models import Comment
+from src.database.models import Comment, Image
 from src.schemas.comment_schemas import CommentModel
 
 
@@ -81,3 +81,16 @@ async def remove_comment(comment_id, db: Session):
         db.delete(comment)
         db.commit()
     return comment
+
+
+async def get_image_by_id(image_id: int, db: Session):
+    """
+    The get_image_by_id function takes in an image_id and a database session,
+    and returns the Image object with that id. If no such image exists, it returns None.
+
+    :param image_id: int: Specify the id of the image to be retrieved
+    :param db: Session: Pass the database session to the function
+    :return: The image with the given id
+    """
+    image = db.query(Image).filter_by(id=image_id).first()
+    return image
