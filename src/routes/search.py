@@ -8,6 +8,7 @@ from src.database.models import User
 from src.repository.search import find_image_by_tag
 from src.routes.tags import access_get, access_delete, access_create
 from src.schemas.image_schemas import ImageDb
+from src.schemas.transformed_image_schemas import SearchImageResponse
 from src.services.auth import auth_service
 from src.repository.search import get_img_by_user_id
 
@@ -39,7 +40,7 @@ async def get_image_by_user_id(user_id: int = Path(ge=1),
     return images
 
 
-@router.get("/", response_model=List[ImageDb], dependencies=[Depends(access_get)])
+@router.get("/", response_model=List[SearchImageResponse], dependencies=[Depends(access_get)])
 async def search_images_by_tag(skip: int = 0, limit: int = 10,
                                search_tag: str = "",
                                filter_type: str = 'd',

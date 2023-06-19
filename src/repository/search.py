@@ -7,16 +7,15 @@ from src.database.db import get_db
 
 def calc_average_rating(image_id, db: Session):
     """
-    The get_average_rating function takes in an image_id and a database session.
-    It then queries the Rating table for all ratings associated with that image_id.
-    If there are no ratings, it returns 0 as the average rating. If there are ratings,
-    it sums up all of the star values (one star = 1 point, two stars = 2 points etc.)
-    and divides by the number of total votes to get an average rating.
+    The calc_average_rating function calculates the average rating for a given image.
+        Args:
+            image_id (int): The id of the image to calculate an average rating for.
 
-    :param image_id: Find the image in the database
-    :param db: Session: Access the database
-    :return: The average rating of the image with the given id
+    :param image_id: Identify the image in the database
+    :param db: Session: Pass in the database session, so that we can use it to query the database
+    :return: The average rating of an image
     """
+
     image_ratings = db.query(Rating).filter(Rating.image_id == image_id).all()
     if len(image_ratings) == 0:
         return 0
@@ -110,6 +109,7 @@ async def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str
         for img_rating in sorted_images_rating_list:
             for image in images:
                 if img_rating[0] == image.id:
+                    image.rating = img_rating[1]
                     final_images.append(image)
         images = final_images
     elif filter_type == "-r":
@@ -125,6 +125,7 @@ async def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str
         for img_rating in sorted_images_rating_list:
             for image in images:
                 if img_rating[0] == image.id:
+                    image.rating = img_rating[1]
                     final_images.append(image)
         images = final_images
     else:
