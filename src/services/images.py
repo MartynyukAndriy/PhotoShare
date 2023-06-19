@@ -38,6 +38,6 @@ async def images_service_normalize_tags(body):
     :doc-author: Trelent
     """
 
-    tags = [tag.strip() for tag_str in body.tags for tag in tag_str.split(",") if tag]
+    tags = [tag[:25].strip() for tag_str in body.tags for tag in tag_str.split(",") if tag]
     correct_tags = list(OrderedDict.fromkeys(tags))
     return correct_tags
