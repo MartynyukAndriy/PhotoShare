@@ -19,10 +19,10 @@ async def get_images(db: Session, user: User):
     :return: A list of dictionaries, each dictionary containing an image object and its associated ratings
     """
 
-    if user.role == Role.admin:
-        images = db.query(Image).order_by(Image.id).all()
-    else:
-        images = db.query(Image).filter(Image.user_id == user.id).order_by(Image.id).all()
+    # if user.role == Role.admin:
+    # images = db.query(Image).order_by(Image.id).all()
+    # else:
+    images = db.query(Image).order_by(Image.id).all()
 
     user_response = []
     for image in images:
@@ -44,10 +44,10 @@ async def get_image(db: Session, id: int, user: User):
     :return: A tuple of the image, ratings and comments
     """
 
-    if user.role == Role.admin:
-        image = db.query(Image).filter(Image.id == id).first()
-    else:
-        image = db.query(Image).filter(Image.id == id, Image.user_id == user.id).first()
+    # if user.role == Role.admin:
+    #     image = db.query(Image).filter(Image.id == id).first()
+    # else:
+    image = db.query(Image).filter(Image.id == id).first()
 
     if image:
         ratings = await get_average_rating(image.id, db)
