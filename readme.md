@@ -30,6 +30,8 @@ The following technologies and packages were used
   <li>SQLAlchemy</li>
   <li>Cloudinary</li>
   <li>Jinja2</li>
+  <li>Unittest</li>
+  <li>PyTest</li>
 </ul>  
 
 ### Contributors
