@@ -7,7 +7,7 @@ from src.database.db import get_db
 from src.database.models import User
 from src.routes.tags import access_get, access_delete, access_create
 from src.schemas.transformed_image_schemas import TransformedImageModel, TransformedImageResponse, \
-    UrlTransformedImageResponse
+    UrlTransformedImageResponse, UrlQRCodeTransformedImageResponse
 from src.repository.transformed_images import get_all_transformed_images, delete_transformed_image_by_id, \
     create_transformed_picture, get_qrcode_transformed_image_by_id, get_transformed_img_by_id, \
     get_url_transformed_image_by_id
@@ -82,7 +82,7 @@ async def get_transformed_images_by_image_id(transformed_image_id: int = Path(ge
     return transformed_image
 
 
-@router.get("/transformed/{transformed_image_id}/qrcode", response_model=UrlTransformedImageResponse,
+@router.get("/transformed/{transformed_image_id}/qrcode", response_model=UrlQRCodeTransformedImageResponse,
             dependencies=[Depends(access_get)])
 async def get_qrcode_for_transformed_image(transformed_image_id: int = Path(ge=1),
                                            db: Session = Depends(get_db),

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from src.database.models import TransformedImage, Image, User, Role
 from src.database.db import get_db
 from src.schemas.transformed_image_schemas import TransformedImageModel
-from src.services.transformed_image import create_qrcode, create_transformations
+from src.services.transformed_image import create_transformations, generate_and_upload_qr_code
 
 
 async def create_transformed_picture(body: TransformedImageModel,
@@ -15,16 +15,16 @@ async def create_transformed_picture(body: TransformedImageModel,
                                      db: Session = Depends(get_db)):
     """
     The create_transformed_picture function takes in a TransformedImageModel object, the current user, and an image id.
-    It then queries the database for an Image with that id and checks if it belongs to the current user. If not, it raises
-    a 404 error. Otherwise, it creates transformations from the body of data passed in by calling create_transformations().
-    It then uses Cloudinary's build_url() function to generate a new url for this transformed image using those transformations.
-    Finally, we add this new TransformedImage object to our database and return its information.
+    It then queries the database for an Image with that id and checks if it belongs to the current user. If not, it raises a 404 error.
+    If so, it creates transformations from the TransformedImageModel object using create_transformations function (see below). It then uses
+    the Cloudinary API to generate a new url for this transformed image based on these transformations and uploads this new url as a QR code
+    to Cloudinary using generate_and_upload_qr_code function (see below). Finally
 
-    :param body: TransformedImageModel: Get the transformation parameters from the request body
+    :param body: TransformedImageModel: Get the data from the request body
     :param current_user: Get the user that is currently logged in
     :param image_id: int: Get the original image from the database
-    :param db: Session: Get the database session
-    :return: A TransformedImageModel object
+    :param db: Session: Get access to the database
+    :return: A transformedimage object, which is then serialized into a json response
     """
     original_image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == current_user.id)).first()
     if not original_image:
@@ -35,8 +35,10 @@ async def create_transformed_picture(body: TransformedImageModel,
     public_id = original_image.public_name
     file_name = public_id + "_" + str(current_user.username)
     new_url = cloudinary.CloudinaryImage(f'PhotoShare/{file_name}').build_url(transformation=transformations)
+    qrcode_url = generate_and_upload_qr_code(new_url)
+    print(qrcode_url)
 
-    new_transformed_image = TransformedImage(transform_image_url=new_url, image_id=original_image.id)
+    new_transformed_image = TransformedImage(transform_image_url=new_url, qrcode_image_url=qrcode_url, image_id=original_image.id)
     db.add(new_transformed_image)
     db.commit()
     db.refresh(new_transformed_image)
@@ -119,8 +121,7 @@ async def get_qrcode_transformed_image_by_id(transformed_id: int, db: Session, c
         filter(and_(TransformedImage.id == transformed_id, Image.user_id == current_user.id)).first()
     if not transformed_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformed image not found or user is not owner of this image")
-    url_to_qrcode = transformed_image.transform_image_url
-    create_qrcode(url_to_qrcode)
+    print(transformed_image.qrcode_image_url)
     return transformed_image
 
 
