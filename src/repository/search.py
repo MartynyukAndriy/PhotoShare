@@ -1,6 +1,8 @@
 from fastapi import Depends, HTTPException, status
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, func, String
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.operators import or_
+
 from src.database.models import Image, User, Tag, Rating, image_m2m_tag, Role
 from src.database.db import get_db
 
@@ -86,21 +88,27 @@ async def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str
     images = []
 
     if filter_type == "d":
-        images = db.query(Image) \
-            .join(image_m2m_tag) \
-            .join(Tag).filter(Tag.name == search) \
-            .order_by(desc(Image.created_at)) \
+        images = db.query(Image)\
+            .join(image_m2m_tag).\
+            join(Tag)\
+            .filter(or_(func.cast(Image.description, String).op('~')(search),func.cast(Tag.name, String).op('~')(search)))\
+            .order_by(desc(Image.created_at))\
             .offset(skip).limit(limit).all()
+
     elif filter_type == "-d":
         images = db.query(Image) \
-            .join(image_m2m_tag) \
-            .join(Tag).filter(Tag.name == search) \
+            .join(image_m2m_tag)\
+            .join(Tag) \
+            .filter(
+            or_(func.cast(Image.description, String).op('~')(search), func.cast(Tag.name, String).op('~')(search))) \
             .order_by(asc(Image.created_at)) \
             .offset(skip).limit(limit).all()
+
     elif filter_type == "r":
         images = db.query(Image) \
-            .join(image_m2m_tag) \
-            .join(Tag).join(Rating).filter(Tag.name == search) \
+            .join(image_m2m_tag)\
+            .join(Tag).filter(
+            or_(func.cast(Image.description, String).op('~')(search), func.cast(Tag.name, String).op('~')(search))) \
             .offset(skip).limit(limit).all()
 
         images_rating_list = list(map(lambda x: (x.id, calc_average_rating(x.id, db)), images))
@@ -112,15 +120,16 @@ async def find_image_by_tag(skip: int, limit: int, search: str, filter_type: str
                     image.rating = img_rating[1]
                     final_images.append(image)
         images = final_images
+
     elif filter_type == "-r":
         images = db.query(Image) \
             .join(image_m2m_tag) \
-            .join(Tag).join(Rating).filter(Tag.name == search) \
+            .join(Tag).filter(
+            or_(func.cast(Image.description, String).op('~')(search), func.cast(Tag.name, String).op('~')(search))) \
             .offset(skip).limit(limit).all()
+
         images_rating_list = list(map(lambda x: (x.id, calc_average_rating(x.id, db)), images))
         sorted_images_rating_list = sorted(images_rating_list, key=lambda x: x[1], reverse=True)
-        print(images_rating_list)
-        print(sorted_images_rating_list)
         final_images = []
         for img_rating in sorted_images_rating_list:
             for image in images:

@@ -2,14 +2,14 @@ import unittest
 from unittest.mock import patch
 from PIL import Image
 from src.schemas.transformed_image_schemas import TransformedImageModel
-from src.services.transformed_image import create_qrcode, create_transformations
+from src.services.transformed_image import generate_and_upload_qr_code, create_transformations
 
 
 class TestCreateQRCode(unittest.TestCase):
     @patch("PIL.Image.Image.show")
     def test_create_qrcode(self, mock_show):
         image_url = "https://example.com/image.jpg"
-        qr_image = create_qrcode(image_url)
+        qr_image = generate_and_upload_qr_code(image_url)
         mock_show.assert_called_once()
 
 class TestCreateTransformations(unittest.TestCase):
