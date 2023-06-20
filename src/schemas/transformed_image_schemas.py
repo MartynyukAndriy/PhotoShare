@@ -7,6 +7,7 @@ from src.schemas.image_schemas import ImageDb
 class TransformedImageResponse(BaseModel):
     id: int = 1
     transform_image_url: str = ''
+    qrcode_image_url: str = ''
     image_id: int = 1
 
     class Config:
@@ -15,6 +16,13 @@ class TransformedImageResponse(BaseModel):
 
 class UrlTransformedImageResponse(BaseModel):
     transform_image_url: str = ''
+
+    class Config:
+        orm_mode = True
+
+
+class UrlQRCodeTransformedImageResponse(BaseModel):
+    qrcode_image_url: str = ''
 
     class Config:
         orm_mode = True
