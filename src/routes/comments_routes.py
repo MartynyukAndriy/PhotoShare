@@ -20,7 +20,7 @@ access_delete = RolesAccess([Role.admin, Role.moderator])
 
 
 @router.get('/', response_model=List[CommentResponse],
-            dependencies=[Depends(RateLimiter(times=5, seconds=2)), Depends(access_get)])
+            dependencies=[Depends(access_get)])
 async def get_comments(db: Session = Depends(get_db), _: User = Depends(auth_service.get_current_user)):
     """
     The get_comments function returns a list of comments from the database.
@@ -56,7 +56,7 @@ async def get_comment_by_id(comment_id: int = Path(ge=1), db: Session = Depends(
 
 
 @router.post('/', response_model=CommentResponse, status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(RateLimiter(times=2, seconds=5)), Depends(access_create)])
+             dependencies=[Depends(access_create)])
 async def create_comment(body: CommentModel, db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
     """
@@ -69,7 +69,7 @@ async def create_comment(body: CommentModel, db: Session = Depends(get_db),
     :return: The comment object
     """
     try:
-        image = db.query(Image).filter_by(id=image_id).first()
+        image = db.query(Image).filter_by(id=body.image_id).first()
     except:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such image")
     body.user_id = current_user.id
