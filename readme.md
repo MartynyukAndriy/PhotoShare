@@ -1,8 +1,8 @@
 # PicPulse
 
-<a href="https://pic-pulse.fly.dev/docs#/">Visit PicPulse API</a>
+<h3><a href="https://pic-pulse.fly.dev/docs#/" style="font-size:30 px">Visit PicPulse Docs</a></h3>
 
-<h3>So this is an API for Photo Sharing:</h3>
+<h3>So this is an API for Photo Sharing and here you can:</h3>
 <ul>
   <li>Sign up and Log in</li>
   <li>Confirm your Email</li>
